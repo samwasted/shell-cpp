@@ -417,13 +417,13 @@ void execute(const Tree &ast) {
     }
   } 
   if (ast.type == Builtin) {
+    saved_stdout = dup(STDOUT_FILENO);
+    saved_stderr = dup(STDERR_FILENO);
     if (out_fd != -1) {
-      saved_stdout = dup(STDOUT_FILENO); 
       dup2(out_fd, STDOUT_FILENO);
       close(out_fd);
     }
     if (err_fd != -1) {
-      saved_stderr = dup(STDERR_FILENO);
       dup2(err_fd, STDERR_FILENO);
       close(err_fd);
     }
