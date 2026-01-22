@@ -457,11 +457,14 @@ void execute(const Tree &ast) {
       size_t start_index = history_count - manual_history_list.size() + 1;
       size_t i = 0;
       if (filtered_children.size() == 1) {
-        size_t new_i = manual_history_list.size() - stoi(filtered_children[0].value);
-        i = max((size_t)0, new_i);
-      }
-      for (; i < manual_history_list.size(); ++i) {
+        if(manual_history_list.size() > stoi(filtered_children[0].value)){
+          i = manual_history_list.size() - stoi(filtered_children[0].value);
+        }
+        for (; i < manual_history_list.size(); ++i) {
           cout << "  " << (start_index + i) << "  " << manual_history_list[i] << endl;
+        }
+      } else if (filtered_children.size() > 1) {
+        cout << ast.value << ": too many arguments" << endl;
       }
     }
 
@@ -596,16 +599,15 @@ void execute_child_logic(const Tree &ast) {
     } else if (ast.value == "history") {
       size_t start_index = history_count - manual_history_list.size() + 1;
       size_t i = 0;
-      if (!filtered_children.empty()) {
-          size_t requested = stoi(filtered_children[0].value);
-          if (requested < manual_history_list.size()) {
-            i = manual_history_list.size() - requested;
-          }
-          i = max((size_t)0, manual_history_list.size() - requested);
-      }
-
-      for (; i < manual_history_list.size(); ++i) {
+      if (filtered_children.size() == 1) {
+        if(manual_history_list.size() > stoi(filtered_children[0].value)){
+          i = manual_history_list.size() - stoi(filtered_children[0].value);
+        }
+        for (; i < manual_history_list.size(); ++i) {
           cout << "  " << (start_index + i) << "  " << manual_history_list[i] << endl;
+        }
+      } else if (filtered_children.size() > 1) {
+        cout << ast.value << ": too many arguments" << endl;
       }
     }
     exit(0);
