@@ -96,7 +96,11 @@ vector<Token> parse(string in) {
         i++;
     }
     continue;
-    }   
+    } else if (in[i] == '&') {
+    tokens.emplace_back(Token{Background, "&"});
+    i++;
+    continue;
+    }
     else if (isdigit(in[i]) && i + 1 < in.size() && in[i+1] == '>') {
       if (i + 2 < in.size() && in[i+2] == '>') {
           // Handle 1>> or 2>>
@@ -224,4 +228,43 @@ Tree check(vector<Token> &tokens) {
   }
 
   return tree;
+}
+
+vector<Tree> build_pipeline_trees(vector<Token> &tokens) {
+    vector<Tree> pipeline;
+    vector<Token> current_cmd_tokens;
+    bool background_pipeline = false;
+
+    for (const auto &tok : tokens) {
+        if (tok.type == Background) {
+            background_pipeline = true;
+            break; 
+        }
+    }
+
+    for (const auto &tok : tokens) {
+        if (tok.type == Background || tok.type == Semicolon) {
+            break; 
+        }
+
+        if (tok.type == Pipe) {
+            if (!current_cmd_tokens.empty()) {
+                pipeline.push_back(check(current_cmd_tokens));
+                current_cmd_tokens.clear();
+            }
+        } else {
+            current_cmd_tokens.push_back(tok);
+        }
+    }
+    if (!current_cmd_tokens.empty()) {
+        pipeline.push_back(check(current_cmd_tokens));
+    }
+
+    // apply the background flag to every command in this pipeline.
+    // eg if we run 'ls | grep .cpp &', both 'ls' and 'grep' belong to the background process group.
+    for (auto &ast : pipeline) {
+        ast.is_background = background_pipeline;
+    }
+
+    return pipeline;
 }

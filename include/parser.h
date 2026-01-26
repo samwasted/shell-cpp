@@ -8,7 +8,7 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
-enum TokenT { PlainText, SingleQuoted, Pipe, Semicolon, WhitespaceTk, RedirectOut };
+enum TokenT { PlainText, SingleQuoted, Pipe, Semicolon, WhitespaceTk, RedirectOut, Background };
 
 typedef struct Token {
   TokenT type;
@@ -21,6 +21,7 @@ typedef struct Tree {
   std::string value;
   fs::path path;
   std::vector<Tree> children;
+  bool is_background = false;
 } Tree;
 
 

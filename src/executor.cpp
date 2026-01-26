@@ -5,6 +5,8 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <algorithm>
+#include <signal.h>
+#include <termios.h>
 #define ALL(s) (s).begin(), (s).end()
 using namespace std;
 
@@ -122,6 +124,10 @@ void execute(const Tree &ast) {
         for (; i < manual_history_list.size(); ++i) {
             cout << "  " << (start_index + i) << "  " << manual_history_list[i] << endl;
         }
+    } else if (ast.value == "jobs") {
+        for (size_t i = 0; i < jobs.size(); ++i) {
+            cout << "[" << i + 1 << "]  Running  " << jobs[i].command << " (" << jobs[i].pid << ")" << endl;
+        }
     }
 
     // restore parent descriptors
@@ -135,35 +141,61 @@ void execute(const Tree &ast) {
     }
 
   } else if (ast.type == ExecutableFile) {
+    sigset_t mask, oldmask;
+    sigemptyset(&mask);
+    sigaddset(&mask, SIGCHLD);
+    sigprocmask(SIG_BLOCK, &mask, &oldmask); // block before fork
+
     pid_t pid = fork();
+
     if (pid == 0) {
-      // no need to backup here because the child will die anyway
-      if (out_fd != -1) dup2(out_fd, STDOUT_FILENO);
-      if (err_fd != -1) dup2(err_fd, STDERR_FILENO);
+        sigprocmask(SIG_SETMASK, &oldmask, nullptr); 
 
-      vector<char*> argv;
-      argv.push_back(const_cast<char*>(ast.value.c_str()));
-      for (const auto& child : filtered_children) {
-        argv.push_back(const_cast<char*>(child.value.c_str()));
-      }
-      argv.push_back(nullptr);
+        if (out_fd != -1) dup2(out_fd, STDOUT_FILENO);
+        if (err_fd != -1) dup2(err_fd, STDERR_FILENO);
 
-      execv(ast.path.c_str(), argv.data());
-      perror("execv failed");
-      exit(1);
+        vector<char*> argv;
+        argv.push_back(const_cast<char*>(ast.value.c_str()));
+        for (const auto& child : filtered_children) {
+            argv.push_back(const_cast<char*>(child.value.c_str()));
+        }
+        argv.push_back(nullptr);
+
+        execv(ast.path.c_str(), argv.data());
+        perror("execv failed");
+        exit(1);
+
     } else if (pid > 0) {
         if (out_fd != -1) close(out_fd);
         if (err_fd != -1) close(err_fd);
-        
-        int status;
-        waitpid(pid, &status, 0);
 
-        if (WIFEXITED(status)) {
-          int code = WEXITSTATUS(status);
-          if (code != 0) { 
-            cout << "Error code " << code << " encountered" << endl;
-          }
+        if (!ast.is_background) {
+            // FOREGROUND: The shell waits
+            int status;
+            if (waitpid(pid, &status, WUNTRACED) > 0) {
+                // reclaim terminal
+                tcsetpgrp(STDIN_FILENO, getpgrp());
+                tcsetattr(STDIN_FILENO, TCSADRAIN, &shell_tmodes);
+
+                if (WIFEXITED(status)) {
+                    int code = WEXITSTATUS(status);
+                    if (code != 0) cout << "Error code " << code << " encountered" << endl;
+                } else if (WIFSIGNALED(status)) {
+                    cout << "Terminated by signal " << WTERMSIG(status) << endl;
+                }
+            }
+        } else {
+            // BACKGROUND: The shell records and moves on immediately
+            jobs.push_back({pid, ast.value, true});
+            cout << "[" << jobs.size() << "] " << pid << endl;
+            // no waitpid here
         }
+
+        // unblock SIGCHLD so handler can work
+        sigprocmask(SIG_SETMASK, &oldmask, nullptr);
+    } else {
+        perror("fork failed");
+        sigprocmask(SIG_SETMASK, &oldmask, nullptr); // cleanup on error
     }
   } else {
     cout << ast.value << ": command not found" << endl;
@@ -223,6 +255,10 @@ void execute_child_logic(const Tree &ast) {
       exit(1); 
     }
     close(err_fd);
+  }
+  // if process is background, it needs its own group id
+  if (ast.is_background) {
+      setpgid(0, 0); 
   }
 
   // execution Switch
@@ -294,6 +330,10 @@ void execute_child_logic(const Tree &ast) {
       for (; i < manual_history_list.size(); ++i) {
           cout << "  " << (start_index + i) << "  " << manual_history_list[i] << endl;
       }
+    } else if (ast.value == "jobs") {
+        for (size_t i = 0; i < jobs.size(); ++i) {
+            cout << "[" << i + 1 << "]  Running  " << jobs[i].command << " (" << jobs[i].pid << ")" << endl;
+        }
     }
   } break;
 
@@ -337,28 +377,40 @@ void execute_pipeline(const vector<Tree> &pipeline) {
           return;
       }
   }
+  sigset_t mask, oldmask;
+  sigemptyset(&mask);
+  sigaddset(&mask, SIGCHLD);
+  sigprocmask(SIG_BLOCK, &mask, &oldmask);
+
+  vector<pid_t> children_pids;
 
   for (int i = 0; i < n; i++) {
     pid_t pid = fork();
     if (pid == 0) {
-        // redirect input from previous pipe
-        if (i > 0) {
-            if (dup2(pipefds[(i - 1) * 2], STDIN_FILENO) < 0) perror("dup2 input");
-        }
-        // redirect output to current pipe
-        if (i < n - 1) {
-            if (dup2(pipefds[i * 2 + 1], STDOUT_FILENO) < 0) perror("dup2 output");
-        }
 
-        // close all pipe FDs in the child
-        for (int j = 0; j < 2 * (n - 1); j++) {
-            close(pipefds[j]);
-        }
+      // unblock signals in the child
+      sigprocmask(SIG_SETMASK, &oldmask, nullptr);
 
-        execute_child_logic(pipeline[i]);
-        exit(0);
+      // redirect input from previous pipe
+      if (i > 0) {
+        if (dup2(pipefds[(i - 1) * 2], STDIN_FILENO) < 0) perror("dup2 input");
+      }
+      // redirect output to current pipe
+      if (i < n - 1) {
+          if (dup2(pipefds[i * 2 + 1], STDOUT_FILENO) < 0) perror("dup2 output");        
+      }
+
+      // close all pipe FDs in the child
+      for (int j = 0; j < 2 * (n - 1); j++) {
+          close(pipefds[j]);
+      }
+
+      execute_child_logic(pipeline[i]);
+      exit(0);
     } else if (pid < 0) {
-        perror("fork failed");
+      perror("fork failed");
+    } else if (pid > 0) {
+      children_pids.push_back(pid);
     }
   }
 
@@ -367,8 +419,37 @@ void execute_pipeline(const vector<Tree> &pipeline) {
       close(pipefds[j]);
   }
 
-  // then wait for the children
-  for (int i = 0; i < n; i++) {
-      wait(NULL);
+ if (!pipeline.empty() && pipeline[0].is_background) {
+      // reconstruct the full command string: "cmd arg | cmd arg"
+      string cmd_str = "";
+      for (size_t i = 0; i < pipeline.size(); ++i) {
+          cmd_str += pipeline[i].value; // add command name 
+
+          // add all arguments
+          for (const auto& child : pipeline[i].children) {
+              cmd_str += " " + child.value;
+          }
+
+          // add pipe separator if this isn't the last command
+          if (i < pipeline.size() - 1) {
+              cmd_str += " | ";
+          }
+      }
+
+      // add the reconstructed string to the jobs list
+      jobs.push_back({children_pids.back(), cmd_str, true});
+      cout << "[" << jobs.size() << "] " << children_pids.back() << endl;
+      
+      sigprocmask(SIG_SETMASK, &oldmask, nullptr);
+      return; 
   }
+  // then wait for the children/foreground
+  for (int i = 0; i < n; i++) {
+    waitpid(children_pids[i], nullptr, 0);
+  }
+
+  // reclaim terminal
+  tcsetpgrp(STDIN_FILENO, getpgrp());
+  tcsetattr(STDIN_FILENO, TCSADRAIN, &shell_tmodes);
+  sigprocmask(SIG_SETMASK, &oldmask, nullptr);
 }

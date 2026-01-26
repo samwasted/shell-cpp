@@ -2,15 +2,16 @@
 #include <iostream>
 #include <sstream>
 #include <cstdlib>
-
 using namespace std;
 
-vector<string> builtins = {"cd", "exit", "echo", "pwd", "type", "history"};
+vector<Job> jobs;
+struct termios shell_tmodes;
+vector<string> builtins = {"cd", "exit", "echo", "pwd", "type", "history", "jobs"};
 deque<string> manual_history_list;
 const size_t MAX_HISTORY = 500;
 size_t history_count = 0;
 
-bool peek(const string &s, int (*f)(int), int pos) {
+bool peek(const string &s, int (*f)(int), size_t pos) {
   if (pos + 1 < s.size()) {
     return f(s[pos + 1]);
   }
@@ -18,7 +19,7 @@ bool peek(const string &s, int (*f)(int), int pos) {
   return false;
 }
 
-bool peek(const string &s, bool (*f)(char), int pos) {
+bool peek(const string &s, bool (*f)(char), size_t pos) {
   if (pos + 1 < s.size()) {
     return f(s[pos + 1]);
   }
