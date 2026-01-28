@@ -1,0 +1,643 @@
+8667  execve("./myshell", ["./myshell"], 0x7ffcb25b3528 /* 55 vars */) = 0
+8667  brk(NULL)                         = 0xd939000
+8667  access("/etc/ld.so.preload", R_OK) = -1 ENOENT (No such file or directory)
+8667  openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+8667  fstat(3, {st_mode=S_IFREG|0644, st_size=80555, ...}) = 0
+8667  mmap(NULL, 80555, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7fe099391000
+8667  close(3)                          = 0
+8667  mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7fe09938f000
+8667  openat(AT_FDCWD, "/lib64/libreadline.so.8", O_RDONLY|O_CLOEXEC) = 3
+8667  read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+8667  fstat(3, {st_mode=S_IFREG|0755, st_size=382312, ...}) = 0
+8667  mmap(NULL, 380008, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7fe099332000
+8667  mmap(0x7fe099367000, 122880, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x35000) = 0x7fe099367000
+8667  mmap(0x7fe099385000, 36864, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x53000) = 0x7fe099385000
+8667  mmap(0x7fe09938e000, 3176, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7fe09938e000
+8667  close(3)                          = 0
+8667  openat(AT_FDCWD, "/lib64/libstdc++.so.6", O_RDONLY|O_CLOEXEC) = 3
+8667  read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+8667  fstat(3, {st_mode=S_IFREG|0755, st_size=2635560, ...}) = 0
+8667  mmap(NULL, 2580552, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7fe099000000
+8667  mmap(0x7fe099141000, 1179648, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x141000) = 0x7fe099141000
+8667  mmap(0x7fe099261000, 73728, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x260000) = 0x7fe099261000
+8667  mmap(0x7fe099273000, 12360, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7fe099273000
+8667  close(3)                          = 0
+8667  openat(AT_FDCWD, "/lib64/libm.so.6", O_RDONLY|O_CLOEXEC) = 3
+8667  read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+8667  fstat(3, {st_mode=S_IFREG|0755, st_size=1013368, ...}) = 0
+8667  mmap(NULL, 999440, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7fe098f0b000
+8667  mmap(0x7fe098f8d000, 462848, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x82000) = 0x7fe098f8d000
+8667  mmap(0x7fe098ffe000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0xf2000) = 0x7fe098ffe000
+8667  close(3)                          = 0
+8667  openat(AT_FDCWD, "/lib64/libgcc_s.so.1", O_RDONLY|O_CLOEXEC) = 3
+8667  read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+8667  fstat(3, {st_mode=S_IFREG|0755, st_size=182376, ...}) = 0
+8667  mmap(NULL, 176584, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7fe099306000
+8667  mmap(0x7fe099329000, 28672, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x23000) = 0x7fe099329000
+8667  mmap(0x7fe099330000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x2a000) = 0x7fe099330000
+8667  mmap(0x7fe099331000, 456, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7fe099331000
+8667  close(3)                          = 0
+8667  openat(AT_FDCWD, "/lib64/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+8667  read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0p7\0\0\0\0\0\0"..., 832) = 832
+8667  pread64(3, "\6\0\0\0\4\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0"..., 784, 64) = 784
+8667  fstat(3, {st_mode=S_IFREG|0755, st_size=2455432, ...}) = 0
+8667  pread64(3, "\6\0\0\0\4\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0"..., 784, 64) = 784
+8667  mmap(NULL, 2042928, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7fe098d18000
+8667  mmap(0x7fe098e87000, 483328, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x16f000) = 0x7fe098e87000
+8667  mmap(0x7fe098efd000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1e4000) = 0x7fe098efd000
+8667  mmap(0x7fe098f03000, 31792, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7fe098f03000
+8667  close(3)                          = 0
+8667  openat(AT_FDCWD, "/lib64/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = 3
+8667  read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+8667  fstat(3, {st_mode=S_IFREG|0755, st_size=187368, ...}) = 0
+8667  mmap(NULL, 182560, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7fe0992d9000
+8667  mmap(0x7fe0992ee000, 77824, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x15000) = 0x7fe0992ee000
+8667  mmap(0x7fe099301000, 20480, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x28000) = 0x7fe099301000
+8667  close(3)                          = 0
+8667  mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7fe0992d7000
+8667  mmap(NULL, 12288, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7fe0992d4000
+8667  arch_prctl(ARCH_SET_FS, 0x7fe0992d4780) = 0
+8667  set_tid_address(0x7fe0992d4a50)   = 8667
+8667  set_robust_list(0x7fe0992d4a60, 24) = 0
+8667  rseq(0x7fe0992d46a0, 0x20, 0, 0x53053053) = 0
+8667  mprotect(0x7fe098efd000, 16384, PROT_READ) = 0
+8667  mprotect(0x7fe099301000, 16384, PROT_READ) = 0
+8667  mprotect(0x7fe099330000, 4096, PROT_READ) = 0
+8667  mprotect(0x7fe098ffe000, 4096, PROT_READ) = 0
+8667  mprotect(0x7fe099261000, 69632, PROT_READ) = 0
+8667  mprotect(0x7fe099385000, 12288, PROT_READ) = 0
+8667  mprotect(0x420000, 4096, PROT_READ) = 0
+8667  mprotect(0x7fe0993e3000, 8192, PROT_READ) = 0
+8667  prlimit64(0, RLIMIT_STACK, NULL, {rlim_cur=8192*1024, rlim_max=RLIM64_INFINITY}) = 0
+8667  getrandom("\x51\x38\x98\xb5\x46\x79\x7c\x95", 8, GRND_NONBLOCK) = 8
+8667  munmap(0x7fe099391000, 80555)     = 0
+8667  futex(0x7fe0992736bc, FUTEX_WAKE_PRIVATE, 2147483647) = 0
+8667  brk(NULL)                         = 0xd939000
+8667  brk(0xd96c000)                    = 0xd96c000
+8667  ioctl(0, TCGETS2, {c_iflag=ICRNL|IXON|IUTF8, c_oflag=NL0|CR0|TAB0|BS0|VT0|FF0|OPOST|ONLCR, c_cflag=B38400|B38400<<IBSHIFT|CS8|CREAD, c_lflag=ISIG|ICANON|ECHO|ECHOE|ECHOK|IEXTEN|ECHOCTL|ECHOKE, ...}) = 0
+8667  rt_sigaction(SIGCHLD, {sa_handler=0x4087b6, sa_mask=[], sa_flags=SA_RESTORER|SA_RESTART|SA_NOCLDSTOP, sa_restorer=0x7fe098d32290}, NULL, 8) = 0
+8667  ioctl(0, TIOCGWINSZ, {ws_row=21, ws_col=80, ws_xpixel=0, ws_ypixel=0}) = 0
+8667  ioctl(1, TCGETS2, {c_iflag=ICRNL|IXON|IUTF8, c_oflag=NL0|CR0|TAB0|BS0|VT0|FF0|OPOST|ONLCR, c_cflag=B38400|B38400<<IBSHIFT|CS8|CREAD, c_lflag=ISIG|ICANON|ECHO|ECHOE|ECHOK|IEXTEN|ECHOCTL|ECHOKE, ...}) = 0
+8667  newfstatat(AT_FDCWD, "/home/samwasted/.terminfo", 0xd96b760, 0) = -1 ENOENT (No such file or directory)
+8667  newfstatat(AT_FDCWD, "/etc/terminfo", {st_mode=S_IFDIR|0755, st_size=0, ...}, 0) = 0
+8667  newfstatat(AT_FDCWD, "/usr/share/terminfo", {st_mode=S_IFDIR|0755, st_size=44, ...}, 0) = 0
+8667  access("/etc/terminfo/x/xterm-256color", R_OK) = -1 ENOENT (No such file or directory)
+8667  access("/usr/share/terminfo/x/xterm-256color", R_OK) = 0
+8667  getuid()                          = 1000
+8667  setfsuid(1000)                    = 1000
+8667  getgid()                          = 1000
+8667  setfsgid(1000)                    = 1000
+8667  openat(AT_FDCWD, "/usr/share/terminfo/x/xterm-256color", O_RDONLY) = 3
+8667  geteuid()                         = 1000
+8667  setfsuid(1000)                    = 1000
+8667  getegid()                         = 1000
+8667  setfsgid(1000)                    = 1000
+8667  fstat(3, {st_mode=S_IFREG|0644, st_size=4074, ...}) = 0
+8667  fstat(3, {st_mode=S_IFREG|0644, st_size=4074, ...}) = 0
+8667  brk(0xd98d000)                    = 0xd98d000
+8667  read(3, "\36\2%\0&\0\17\0\235\1Z\6xterm-256color|xterm"..., 32768) = 4074
+8667  read(3, "", 28672)                = 0
+8667  close(3)                          = 0
+8667  ioctl(1, TCGETS2, {c_iflag=ICRNL|IXON|IUTF8, c_oflag=NL0|CR0|TAB0|BS0|VT0|FF0|OPOST|ONLCR, c_cflag=B38400|B38400<<IBSHIFT|CS8|CREAD, c_lflag=ISIG|ICANON|ECHO|ECHOE|ECHOK|IEXTEN|ECHOCTL|ECHOKE, ...}) = 0
+8667  ioctl(1, TCGETS2, {c_iflag=ICRNL|IXON|IUTF8, c_oflag=NL0|CR0|TAB0|BS0|VT0|FF0|OPOST|ONLCR, c_cflag=B38400|B38400<<IBSHIFT|CS8|CREAD, c_lflag=ISIG|ICANON|ECHO|ECHOE|ECHOK|IEXTEN|ECHOCTL|ECHOKE, ...}) = 0
+8667  ioctl(1, TCGETS2, {c_iflag=ICRNL|IXON|IUTF8, c_oflag=NL0|CR0|TAB0|BS0|VT0|FF0|OPOST|ONLCR, c_cflag=B38400|B38400<<IBSHIFT|CS8|CREAD, c_lflag=ISIG|ICANON|ECHO|ECHOE|ECHOK|IEXTEN|ECHOCTL|ECHOKE, ...}) = 0
+8667  ioctl(1, TCGETS2, {c_iflag=ICRNL|IXON|IUTF8, c_oflag=NL0|CR0|TAB0|BS0|VT0|FF0|OPOST|ONLCR, c_cflag=B38400|B38400<<IBSHIFT|CS8|CREAD, c_lflag=ISIG|ICANON|ECHO|ECHOE|ECHOK|IEXTEN|ECHOCTL|ECHOKE, ...}) = 0
+8667  ioctl(1, TIOCGWINSZ, {ws_row=21, ws_col=80, ws_xpixel=0, ws_ypixel=0}) = 0
+8667  ioctl(0, TIOCGWINSZ, {ws_row=21, ws_col=80, ws_xpixel=0, ws_ypixel=0}) = 0
+8667  ioctl(0, TIOCSWINSZ, {ws_row=21, ws_col=80, ws_xpixel=0, ws_ypixel=0}) = 0
+8667  ioctl(0, TCGETS2, {c_iflag=ICRNL|IXON|IUTF8, c_oflag=NL0|CR0|TAB0|BS0|VT0|FF0|OPOST|ONLCR, c_cflag=B38400|B38400<<IBSHIFT|CS8|CREAD, c_lflag=ISIG|ICANON|ECHO|ECHOE|ECHOK|IEXTEN|ECHOCTL|ECHOKE, ...}) = 0
+8667  openat(AT_FDCWD, "/usr/lib/locale/locale-archive", O_RDONLY|O_CLOEXEC) = 3
+8667  fstat(3, {st_mode=S_IFREG|0644, st_size=233242544, ...}) = 0
+8667  mmap(NULL, 233242544, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7fe08ae00000
+8667  close(3)                          = 0
+8667  openat(AT_FDCWD, "/home/samwasted/.inputrc", O_RDONLY) = -1 ENOENT (No such file or directory)
+8667  openat(AT_FDCWD, "/etc/inputrc", O_RDONLY) = 3
+8667  fstat(3, {st_mode=S_IFREG|0644, st_size=943, ...}) = 0
+8667  read(3, "# do not bell on tab-completion\n"..., 943) = 943
+8667  close(3)                          = 0
+8667  brk(0xd9ae000)                    = 0xd9ae000
+8667  ioctl(0, TIOCGWINSZ, {ws_row=21, ws_col=80, ws_xpixel=0, ws_ypixel=0}) = 0
+8667  ioctl(0, TIOCSWINSZ, {ws_row=21, ws_col=80, ws_xpixel=0, ws_ypixel=0}) = 0
+8667  ioctl(0, TCGETS2, {c_iflag=ICRNL|IXON|IUTF8, c_oflag=NL0|CR0|TAB0|BS0|VT0|FF0|OPOST|ONLCR, c_cflag=B38400|B38400<<IBSHIFT|CS8|CREAD, c_lflag=ISIG|ICANON|ECHO|ECHOE|ECHOK|IEXTEN|ECHOCTL|ECHOKE, ...}) = 0
+8667  ioctl(0, TCSETSW2, {c_iflag=IXON|IUTF8, c_oflag=NL0|CR0|TAB0|BS0|VT0|FF0|OPOST|ONLCR, c_cflag=B38400|B38400<<IBSHIFT|CS8|CREAD, c_lflag=ISIG|ECHOE|ECHOK|IEXTEN|ECHOCTL|ECHOKE, ...}) = 0
+8667  fstat(1, {st_mode=S_IFCHR|0600, st_rdev=makedev(0x88, 0), ...}) = 0
+8667  write(1, "\33[?2004h", 8)         = 8
+8667  rt_sigprocmask(SIG_BLOCK, [HUP INT QUIT ALRM TERM TSTP TTIN TTOU], [], 8) = 0
+8667  rt_sigaction(SIGINT, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+8667  rt_sigaction(SIGTERM, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+8667  rt_sigaction(SIGHUP, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+8667  rt_sigaction(SIGQUIT, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+8667  rt_sigaction(SIGALRM, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+8667  rt_sigaction(SIGTSTP, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+8667  rt_sigaction(SIGTTOU, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+8667  rt_sigaction(SIGTTIN, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+8667  rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+8667  rt_sigaction(SIGWINCH, {sa_handler=0x7fe09934db90, sa_mask=[], sa_flags=SA_RESTORER|SA_RESTART, sa_restorer=0x7fe098d32290}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+8667  openat(AT_FDCWD, "/usr/lib64/gconv/gconv-modules.cache", O_RDONLY|O_CLOEXEC) = 3
+8667  fstat(3, {st_mode=S_IFREG|0644, st_size=27012, ...}) = 0
+8667  mmap(NULL, 27012, PROT_READ, MAP_SHARED, 3, 0) = 0x7fe09939e000
+8667  close(3)                          = 0
+8667  futex(0x7fe098f0272c, FUTEX_WAKE_PRIVATE, 2147483647) = 0
+8667  write(1, "$ ", 2)                 = 2
+8667  pselect6(1, [0], NULL, NULL, NULL, {sigmask=[], sigsetsize=8}) = 1 (in [0])
+8667  read(0, "l", 1)                   = 1
+8667  pselect6(1, [0], NULL, [0], {tv_sec=0, tv_nsec=0}, {sigmask=NULL, sigsetsize=8}) = 0 (Timeout)
+8667  write(1, "l", 1)                  = 1
+8667  pselect6(1, [0], NULL, NULL, NULL, {sigmask=[], sigsetsize=8}) = 1 (in [0])
+8667  read(0, "s", 1)                   = 1
+8667  pselect6(1, [0], NULL, [0], {tv_sec=0, tv_nsec=0}, {sigmask=NULL, sigsetsize=8}) = 0 (Timeout)
+8667  write(1, "s", 1)                  = 1
+8667  pselect6(1, [0], NULL, NULL, NULL, {sigmask=[], sigsetsize=8}) = 1 (in [0])
+8667  read(0, " ", 1)                   = 1
+8667  pselect6(1, [0], NULL, [0], {tv_sec=0, tv_nsec=0}, {sigmask=NULL, sigsetsize=8}) = 0 (Timeout)
+8667  write(1, " ", 1)                  = 1
+8667  pselect6(1, [0], NULL, NULL, NULL, {sigmask=[], sigsetsize=8}) = 1 (in [0])
+8667  read(0, "|", 1)                   = 1
+8667  pselect6(1, [0], NULL, [0], {tv_sec=0, tv_nsec=0}, {sigmask=NULL, sigsetsize=8}) = 0 (Timeout)
+8667  write(1, "|", 1)                  = 1
+8667  pselect6(1, [0], NULL, NULL, NULL, {sigmask=[], sigsetsize=8}) = 1 (in [0])
+8667  read(0, " ", 1)                   = 1
+8667  pselect6(1, [0], NULL, [0], {tv_sec=0, tv_nsec=0}, {sigmask=NULL, sigsetsize=8}) = 0 (Timeout)
+8667  write(1, " ", 1)                  = 1
+8667  pselect6(1, [0], NULL, NULL, NULL, {sigmask=[], sigsetsize=8}) = 1 (in [0])
+8667  read(0, "g", 1)                   = 1
+8667  pselect6(1, [0], NULL, [0], {tv_sec=0, tv_nsec=0}, {sigmask=NULL, sigsetsize=8}) = 0 (Timeout)
+8667  write(1, "g", 1)                  = 1
+8667  pselect6(1, [0], NULL, NULL, NULL, {sigmask=[], sigsetsize=8}) = 1 (in [0])
+8667  read(0, "e", 1)                   = 1
+8667  pselect6(1, [0], NULL, [0], {tv_sec=0, tv_nsec=0}, {sigmask=NULL, sigsetsize=8}) = 0 (Timeout)
+8667  write(1, "e", 1)                  = 1
+8667  pselect6(1, [0], NULL, NULL, NULL, {sigmask=[], sigsetsize=8}) = 1 (in [0])
+8667  read(0, "\177", 1)                = 1
+8667  write(1, "\10\33[K", 4)           = 4
+8667  pselect6(1, [0], NULL, NULL, NULL, {sigmask=[], sigsetsize=8}) = 1 (in [0])
+8667  read(0, "r", 1)                   = 1
+8667  pselect6(1, [0], NULL, [0], {tv_sec=0, tv_nsec=0}, {sigmask=NULL, sigsetsize=8}) = 0 (Timeout)
+8667  write(1, "r", 1)                  = 1
+8667  pselect6(1, [0], NULL, NULL, NULL, {sigmask=[], sigsetsize=8}) = 1 (in [0])
+8667  read(0, "e", 1)                   = 1
+8667  pselect6(1, [0], NULL, [0], {tv_sec=0, tv_nsec=0}, {sigmask=NULL, sigsetsize=8}) = 0 (Timeout)
+8667  write(1, "e", 1)                  = 1
+8667  pselect6(1, [0], NULL, NULL, NULL, {sigmask=[], sigsetsize=8}) = 1 (in [0])
+8667  read(0, "p", 1)                   = 1
+8667  pselect6(1, [0], NULL, [0], {tv_sec=0, tv_nsec=0}, {sigmask=NULL, sigsetsize=8}) = 0 (Timeout)
+8667  write(1, "p", 1)                  = 1
+8667  pselect6(1, [0], NULL, NULL, NULL, {sigmask=[], sigsetsize=8}) = 1 (in [0])
+8667  read(0, ".", 1)                   = 1
+8667  pselect6(1, [0], NULL, [0], {tv_sec=0, tv_nsec=0}, {sigmask=NULL, sigsetsize=8}) = 0 (Timeout)
+8667  write(1, ".", 1)                  = 1
+8667  pselect6(1, [0], NULL, NULL, NULL, {sigmask=[], sigsetsize=8}) = 1 (in [0])
+8667  read(0, "c", 1)                   = 1
+8667  pselect6(1, [0], NULL, [0], {tv_sec=0, tv_nsec=0}, {sigmask=NULL, sigsetsize=8}) = 0 (Timeout)
+8667  write(1, "c", 1)                  = 1
+8667  pselect6(1, [0], NULL, NULL, NULL, {sigmask=[], sigsetsize=8}) = 1 (in [0])
+8667  read(0, "p", 1)                   = 1
+8667  pselect6(1, [0], NULL, [0], {tv_sec=0, tv_nsec=0}, {sigmask=NULL, sigsetsize=8}) = 0 (Timeout)
+8667  write(1, "p", 1)                  = 1
+8667  pselect6(1, [0], NULL, NULL, NULL, {sigmask=[], sigsetsize=8}) = 1 (in [0])
+8667  read(0, "p", 1)                   = 1
+8667  pselect6(1, [0], NULL, [0], {tv_sec=0, tv_nsec=0}, {sigmask=NULL, sigsetsize=8}) = 0 (Timeout)
+8667  write(1, "p", 1)                  = 1
+8667  pselect6(1, [0], NULL, NULL, NULL, {sigmask=[], sigsetsize=8}) = 1 (in [0])
+8667  read(0, "\177", 1)                = 1
+8667  write(1, "\10\33[K", 4)           = 4
+8667  pselect6(1, [0], NULL, NULL, NULL, {sigmask=[], sigsetsize=8}) = 1 (in [0])
+8667  read(0, "\177", 1)                = 1
+8667  write(1, "\10\33[K", 4)           = 4
+8667  pselect6(1, [0], NULL, NULL, NULL, {sigmask=[], sigsetsize=8}) = 1 (in [0])
+8667  read(0, "\177", 1)                = 1
+8667  write(1, "\10\33[K", 4)           = 4
+8667  pselect6(1, [0], NULL, NULL, NULL, {sigmask=[], sigsetsize=8}) = 1 (in [0])
+8667  read(0, "\177", 1)                = 1
+8667  write(1, "\10\33[K", 4)           = 4
+8667  pselect6(1, [0], NULL, NULL, NULL, {sigmask=[], sigsetsize=8}) = 1 (in [0])
+8667  read(0, " ", 1)                   = 1
+8667  pselect6(1, [0], NULL, [0], {tv_sec=0, tv_nsec=0}, {sigmask=NULL, sigsetsize=8}) = 0 (Timeout)
+8667  write(1, " ", 1)                  = 1
+8667  pselect6(1, [0], NULL, NULL, NULL, {sigmask=[], sigsetsize=8}) = 1 (in [0])
+8667  read(0, ".", 1)                   = 1
+8667  pselect6(1, [0], NULL, [0], {tv_sec=0, tv_nsec=0}, {sigmask=NULL, sigsetsize=8}) = 0 (Timeout)
+8667  write(1, ".", 1)                  = 1
+8667  pselect6(1, [0], NULL, NULL, NULL, {sigmask=[], sigsetsize=8}) = 1 (in [0])
+8667  read(0, "c", 1)                   = 1
+8667  pselect6(1, [0], NULL, [0], {tv_sec=0, tv_nsec=0}, {sigmask=NULL, sigsetsize=8}) = 0 (Timeout)
+8667  write(1, "c", 1)                  = 1
+8667  pselect6(1, [0], NULL, NULL, NULL, {sigmask=[], sigsetsize=8}) = 1 (in [0])
+8667  read(0, "p", 1)                   = 1
+8667  pselect6(1, [0], NULL, [0], {tv_sec=0, tv_nsec=0}, {sigmask=NULL, sigsetsize=8}) = 0 (Timeout)
+8667  write(1, "p", 1)                  = 1
+8667  pselect6(1, [0], NULL, NULL, NULL, {sigmask=[], sigsetsize=8}) = 1 (in [0])
+8667  read(0, "p", 1)                   = 1
+8667  pselect6(1, [0], NULL, [0], {tv_sec=0, tv_nsec=0}, {sigmask=NULL, sigsetsize=8}) = 0 (Timeout)
+8667  write(1, "p", 1)                  = 1
+8667  pselect6(1, [0], NULL, NULL, NULL, {sigmask=[], sigsetsize=8}) = 1 (in [0])
+8667  read(0, "\r", 1)                  = 1
+8667  write(1, "\n", 1)                 = 1
+8667  write(1, "\33[?2004l\r", 9)       = 9
+8667  ioctl(0, TCSETSW2, {c_iflag=ICRNL|IXON|IUTF8, c_oflag=NL0|CR0|TAB0|BS0|VT0|FF0|OPOST|ONLCR, c_cflag=B38400|B38400<<IBSHIFT|CS8|CREAD, c_lflag=ISIG|ICANON|ECHO|ECHOE|ECHOK|IEXTEN|ECHOCTL|ECHOKE, ...}) = 0
+8667  rt_sigaction(SIGINT, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, 8) = 0
+8667  rt_sigaction(SIGTERM, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, 8) = 0
+8667  rt_sigaction(SIGHUP, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, 8) = 0
+8667  rt_sigaction(SIGQUIT, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, 8) = 0
+8667  rt_sigaction(SIGALRM, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, 8) = 0
+8667  rt_sigaction(SIGTSTP, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, 8) = 0
+8667  rt_sigaction(SIGTTOU, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, 8) = 0
+8667  rt_sigaction(SIGTTIN, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, 8) = 0
+8667  rt_sigaction(SIGWINCH, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=0x7fe09934db90, sa_mask=[], sa_flags=SA_RESTORER|SA_RESTART, sa_restorer=0x7fe098d32290}, 8) = 0
+8667  gettimeofday({tv_sec=1769573070, tv_usec=591289}, NULL) = 0
+8667  newfstatat(AT_FDCWD, "/home/samwasted/.local/bin/ls", 0x7fff0e9b0b90, 0) = -1 ENOENT (No such file or directory)
+8667  newfstatat(AT_FDCWD, "/home/samwasted/bin/ls", 0x7fff0e9b0b90, 0) = -1 ENOENT (No such file or directory)
+8667  newfstatat(AT_FDCWD, "/usr/local/bin/ls", 0x7fff0e9b0b90, 0) = -1 ENOENT (No such file or directory)
+8667  newfstatat(AT_FDCWD, "/usr/bin/ls", {st_mode=S_IFREG|0755, st_size=145312, ...}, 0) = 0
+8667  newfstatat(AT_FDCWD, "/usr/bin/ls", {st_mode=S_IFREG|0755, st_size=145312, ...}, 0) = 0
+8667  newfstatat(AT_FDCWD, "/home/samwasted/.local/bin/grep", 0x7fff0e9b0b90, 0) = -1 ENOENT (No such file or directory)
+8667  newfstatat(AT_FDCWD, "/home/samwasted/bin/grep", 0x7fff0e9b0b90, 0) = -1 ENOENT (No such file or directory)
+8667  newfstatat(AT_FDCWD, "/usr/local/bin/grep", 0x7fff0e9b0b90, 0) = -1 ENOENT (No such file or directory)
+8667  newfstatat(AT_FDCWD, "/usr/bin/grep", {st_mode=S_IFREG|0755, st_size=165664, ...}, 0) = 0
+8667  newfstatat(AT_FDCWD, "/usr/bin/grep", {st_mode=S_IFREG|0755, st_size=165664, ...}, 0) = 0
+8667  pipe2([3, 4], 0)                  = 0
+8667  rt_sigprocmask(SIG_BLOCK, [CHLD], [], 8) = 0
+8667  rt_sigprocmask(SIG_BLOCK, ~[], [CHLD], 8) = 0
+8667  clone(child_stack=NULL, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7fe0992d4a50) = 9513
+8667  rt_sigprocmask(SIG_SETMASK, [CHLD] <unfinished ...>
+9513  set_robust_list(0x7fe0992d4a60, 24 <unfinished ...>
+8667  <... rt_sigprocmask resumed>, NULL, 8) = 0
+9513  <... set_robust_list resumed>)    = 0
+8667  rt_sigprocmask(SIG_BLOCK, ~[] <unfinished ...>
+9513  rt_sigprocmask(SIG_SETMASK, [CHLD] <unfinished ...>
+8667  <... rt_sigprocmask resumed>, [CHLD], 8) = 0
+9513  <... rt_sigprocmask resumed>, NULL, 8) = 0
+8667  clone(child_stack=NULL, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD <unfinished ...>
+9513  rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+9513  dup2(4, 1 <unfinished ...>
+8667  <... clone resumed>, child_tidptr=0x7fe0992d4a50) = 9514
+9513  <... dup2 resumed>)               = 1
+8667  rt_sigprocmask(SIG_SETMASK, [CHLD] <unfinished ...>
+9514  set_robust_list(0x7fe0992d4a60, 24 <unfinished ...>
+9513  close(3 <unfinished ...>
+8667  <... rt_sigprocmask resumed>, NULL, 8) = 0
+9514  <... set_robust_list resumed>)    = 0
+9513  <... close resumed>)              = 0
+8667  close(3 <unfinished ...>
+9513  close(4 <unfinished ...>
+8667  <... close resumed>)              = 0
+9514  rt_sigprocmask(SIG_SETMASK, [CHLD] <unfinished ...>
+8667  close(4 <unfinished ...>
+9513  <... close resumed>)              = 0
+8667  <... close resumed>)              = 0
+9514  <... rt_sigprocmask resumed>, NULL, 8) = 0
+8667  wait4(9513 <unfinished ...>
+9513  execve("/usr/bin/ls", ["ls"], 0xd969710 /* 57 vars */ <unfinished ...>
+9514  rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+9514  dup2(3, 0)                        = 0
+9514  close(3)                          = 0
+9514  close(4)                          = 0
+9514  execve("/usr/bin/grep", ["grep", ".cpp"], 0xd969710 /* 57 vars */ <unfinished ...>
+9513  <... execve resumed>)             = 0
+9513  brk(NULL)                         = 0x55a7df08f000
+9513  access("/etc/ld.so.preload", R_OK) = -1 ENOENT (No such file or directory)
+9513  openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+9513  fstat(3, {st_mode=S_IFREG|0644, st_size=80555, ...}) = 0
+9514  <... execve resumed>)             = 0
+9513  mmap(NULL, 80555, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7ff7da890000
+9514  brk(NULL <unfinished ...>
+9513  close(3 <unfinished ...>
+9514  <... brk resumed>)                = 0x555f9c970000
+9513  <... close resumed>)              = 0
+9514  access("/etc/ld.so.preload", R_OK <unfinished ...>
+9513  mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+9514  <... access resumed>)             = -1 ENOENT (No such file or directory)
+9513  <... mmap resumed>)               = 0x7ff7da88e000
+9514  openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC <unfinished ...>
+9513  openat(AT_FDCWD, "/lib64/libselinux.so.1", O_RDONLY|O_CLOEXEC <unfinished ...>
+9514  <... openat resumed>)             = 3
+9513  <... openat resumed>)             = 3
+9514  fstat(3 <unfinished ...>
+9513  read(3 <unfinished ...>
+9514  <... fstat resumed>, {st_mode=S_IFREG|0644, st_size=80555, ...}) = 0
+9513  <... read resumed>, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+9514  mmap(NULL, 80555, PROT_READ, MAP_PRIVATE, 3, 0 <unfinished ...>
+9513  fstat(3 <unfinished ...>
+9514  <... mmap resumed>)               = 0x7fb1e3dd1000
+9513  <... fstat resumed>, {st_mode=S_IFREG|0755, st_size=196664, ...}) = 0
+9514  close(3 <unfinished ...>
+9513  mmap(NULL, 198088, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0 <unfinished ...>
+9514  <... close resumed>)              = 0
+9513  <... mmap resumed>)               = 0x7ff7da85d000
+9514  mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+9513  mmap(0x7ff7da87d000, 53248, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x20000 <unfinished ...>
+9514  <... mmap resumed>)               = 0x7fb1e3dcf000
+9514  openat(AT_FDCWD, "/lib64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC <unfinished ...>
+9513  <... mmap resumed>)               = 0x7ff7da87d000
+9514  <... openat resumed>)             = 3
+9513  mmap(0x7ff7da88a000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x2d000 <unfinished ...>
+9514  read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+9513  <... mmap resumed>)               = 0x7ff7da88a000
+9514  fstat(3, {st_mode=S_IFREG|0755, st_size=707840, ...}) = 0
+9513  mmap(0x7ff7da88c000, 5576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+9514  mmap(NULL, 704984, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0 <unfinished ...>
+9513  <... mmap resumed>)               = 0x7ff7da88c000
+9514  <... mmap resumed>)               = 0x7fb1e3d22000
+9513  close(3 <unfinished ...>
+9514  mmap(0x7fb1e3da0000, 184320, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x7e000 <unfinished ...>
+9513  <... close resumed>)              = 0
+9514  <... mmap resumed>)               = 0x7fb1e3da0000
+9513  openat(AT_FDCWD, "/lib64/libcap.so.2", O_RDONLY|O_CLOEXEC <unfinished ...>
+9514  mmap(0x7fb1e3dcd000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0xaa000 <unfinished ...>
+9513  <... openat resumed>)             = 3
+9514  <... mmap resumed>)               = 0x7fb1e3dcd000
+9513  read(3 <unfinished ...>
+9514  close(3 <unfinished ...>
+9513  <... read resumed>, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0 V\0\0\0\0\0\0"..., 832) = 832
+9514  <... close resumed>)              = 0
+9513  fstat(3 <unfinished ...>
+9514  openat(AT_FDCWD, "/lib64/libc.so.6", O_RDONLY|O_CLOEXEC <unfinished ...>
+9513  <... fstat resumed>, {st_mode=S_IFREG|0755, st_size=44992, ...}) = 0
+9514  <... openat resumed>)             = 3
+9513  mmap(NULL, 45128, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0 <unfinished ...>
+9514  read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0p7\0\0\0\0\0\0"..., 832) = 832
+9513  <... mmap resumed>)               = 0x7ff7da851000
+9514  pread64(3 <unfinished ...>
+9513  mmap(0x7ff7da857000, 16384, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x6000 <unfinished ...>
+9514  <... pread64 resumed>, "\6\0\0\0\4\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0"..., 784, 64) = 784
+9514  fstat(3 <unfinished ...>
+9513  <... mmap resumed>)               = 0x7ff7da857000
+9514  <... fstat resumed>, {st_mode=S_IFREG|0755, st_size=2455432, ...}) = 0
+9513  mmap(0x7ff7da85b000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x9000 <unfinished ...>
+9514  pread64(3 <unfinished ...>
+9513  <... mmap resumed>)               = 0x7ff7da85b000
+9514  <... pread64 resumed>, "\6\0\0\0\4\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0"..., 784, 64) = 784
+9514  mmap(NULL, 2042928, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0 <unfinished ...>
+9513  close(3 <unfinished ...>
+9514  <... mmap resumed>)               = 0x7fb1e3b2f000
+9513  <... close resumed>)              = 0
+9514  mmap(0x7fb1e3c9e000, 483328, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x16f000 <unfinished ...>
+9513  openat(AT_FDCWD, "/lib64/libc.so.6", O_RDONLY|O_CLOEXEC <unfinished ...>
+9514  <... mmap resumed>)               = 0x7fb1e3c9e000
+9513  <... openat resumed>)             = 3
+9514  mmap(0x7fb1e3d14000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1e4000 <unfinished ...>
+9513  read(3 <unfinished ...>
+9514  <... mmap resumed>)               = 0x7fb1e3d14000
+9513  <... read resumed>, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0p7\0\0\0\0\0\0"..., 832) = 832
+9514  mmap(0x7fb1e3d1a000, 31792, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+9513  pread64(3 <unfinished ...>
+9514  <... mmap resumed>)               = 0x7fb1e3d1a000
+9513  <... pread64 resumed>, "\6\0\0\0\4\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0"..., 784, 64) = 784
+9513  fstat(3 <unfinished ...>
+9514  close(3 <unfinished ...>
+9513  <... fstat resumed>, {st_mode=S_IFREG|0755, st_size=2455432, ...}) = 0
+9514  <... close resumed>)              = 0
+9513  pread64(3 <unfinished ...>
+9514  mmap(NULL, 12288, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+9513  <... pread64 resumed>, "\6\0\0\0\4\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0"..., 784, 64) = 784
+9514  <... mmap resumed>)               = 0x7fb1e3b2c000
+9513  mmap(NULL, 2042928, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0 <unfinished ...>
+9514  arch_prctl(ARCH_SET_FS, 0x7fb1e3b2c740 <unfinished ...>
+9513  <... mmap resumed>)               = 0x7ff7da65e000
+9514  <... arch_prctl resumed>)         = 0
+9513  mmap(0x7ff7da7cd000, 483328, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x16f000 <unfinished ...>
+9514  set_tid_address(0x7fb1e3b2ca10)   = 9514
+9513  <... mmap resumed>)               = 0x7ff7da7cd000
+9514  set_robust_list(0x7fb1e3b2ca20, 24) = 0
+9513  mmap(0x7ff7da843000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1e4000 <unfinished ...>
+9514  rseq(0x7fb1e3b2c680, 0x20, 0, 0x53053053) = 0
+9513  <... mmap resumed>)               = 0x7ff7da843000
+9513  mmap(0x7ff7da849000, 31792, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7ff7da849000
+9514  mprotect(0x7fb1e3d14000, 16384, PROT_READ <unfinished ...>
+9513  close(3 <unfinished ...>
+9514  <... mprotect resumed>)           = 0
+9513  <... close resumed>)              = 0
+9514  mprotect(0x7fb1e3dcd000, 4096, PROT_READ <unfinished ...>
+9513  openat(AT_FDCWD, "/lib64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC <unfinished ...>
+9514  <... mprotect resumed>)           = 0
+9513  <... openat resumed>)             = 3
+9513  read(3 <unfinished ...>
+9514  mprotect(0x555f79ccc000, 8192, PROT_READ <unfinished ...>
+9513  <... read resumed>, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+9514  <... mprotect resumed>)           = 0
+9513  fstat(3 <unfinished ...>
+9514  mprotect(0x7fb1e3e23000, 8192, PROT_READ <unfinished ...>
+9513  <... fstat resumed>, {st_mode=S_IFREG|0755, st_size=707840, ...}) = 0
+9514  <... mprotect resumed>)           = 0
+9513  mmap(NULL, 704984, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0 <unfinished ...>
+9514  prlimit64(0, RLIMIT_STACK, NULL <unfinished ...>
+9513  <... mmap resumed>)               = 0x7ff7da5b1000
+9514  <... prlimit64 resumed>, {rlim_cur=8192*1024, rlim_max=RLIM64_INFINITY}) = 0
+9513  mmap(0x7ff7da62f000, 184320, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x7e000 <unfinished ...>
+9514  getrandom( <unfinished ...>
+9513  <... mmap resumed>)               = 0x7ff7da62f000
+9514  <... getrandom resumed>"\xf3\x41\x10\x64\x28\x0f\x67\x6d", 8, GRND_NONBLOCK) = 8
+9513  mmap(0x7ff7da65c000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0xaa000 <unfinished ...>
+9514  munmap(0x7fb1e3dd1000, 80555 <unfinished ...>
+9513  <... mmap resumed>)               = 0x7ff7da65c000
+9514  <... munmap resumed>)             = 0
+9514  brk(NULL <unfinished ...>
+9513  close(3 <unfinished ...>
+9514  <... brk resumed>)                = 0x555f9c970000
+9513  <... close resumed>)              = 0
+9514  brk(0x555f9c991000)               = 0x555f9c991000
+9513  mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+9514  openat(AT_FDCWD, "/usr/lib/locale/locale-archive", O_RDONLY|O_CLOEXEC <unfinished ...>
+9513  <... mmap resumed>)               = 0x7ff7da5af000
+9514  <... openat resumed>)             = 3
+9513  arch_prctl(ARCH_SET_FS, 0x7ff7da5afe00 <unfinished ...>
+9514  fstat(3 <unfinished ...>
+9513  <... arch_prctl resumed>)         = 0
+9514  <... fstat resumed>, {st_mode=S_IFREG|0644, st_size=233242544, ...}) = 0
+9513  set_tid_address(0x7ff7da5b00d0 <unfinished ...>
+9514  mmap(NULL, 233242544, PROT_READ, MAP_PRIVATE, 3, 0 <unfinished ...>
+9513  <... set_tid_address resumed>)    = 9513
+9514  <... mmap resumed>)               = 0x7fb1d5c00000
+9513  set_robust_list(0x7ff7da5b00e0, 24 <unfinished ...>
+9514  close(3 <unfinished ...>
+9513  <... set_robust_list resumed>)    = 0
+9514  <... close resumed>)              = 0
+9513  rseq(0x7ff7da5afc60, 0x20, 0, 0x53053053) = 0
+9514  openat(AT_FDCWD, "/usr/lib64/gconv/gconv-modules.cache", O_RDONLY|O_CLOEXEC) = 3
+9514  fstat(3 <unfinished ...>
+9513  mprotect(0x7ff7da843000, 16384, PROT_READ <unfinished ...>
+9514  <... fstat resumed>, {st_mode=S_IFREG|0644, st_size=27012, ...}) = 0
+9514  mmap(NULL, 27012, PROT_READ, MAP_SHARED, 3, 0 <unfinished ...>
+9513  <... mprotect resumed>)           = 0
+9514  <... mmap resumed>)               = 0x7fb1e3dde000
+9513  mprotect(0x7ff7da65c000, 4096, PROT_READ <unfinished ...>
+9514  close(3)                          = 0
+9513  <... mprotect resumed>)           = 0
+9514  futex(0x7fb1e3d1972c, FUTEX_WAKE_PRIVATE, 2147483647 <unfinished ...>
+9513  mprotect(0x7ff7da85b000, 4096, PROT_READ <unfinished ...>
+9514  <... futex resumed>)              = 0
+9513  <... mprotect resumed>)           = 0
+9514  openat(AT_FDCWD, "/usr/share/locale/locale.alias", O_RDONLY|O_CLOEXEC) = 3
+9513  mprotect(0x7ff7da88a000, 4096, PROT_READ <unfinished ...>
+9514  fstat(3 <unfinished ...>
+9513  <... mprotect resumed>)           = 0
+9514  <... fstat resumed>, {st_mode=S_IFREG|0644, st_size=2998, ...}) = 0
+9514  read(3 <unfinished ...>
+9513  mprotect(0x55a7a9a4a000, 8192, PROT_READ <unfinished ...>
+9514  <... read resumed>, "# Locale name alias data base.\n#"..., 4096) = 2998
+9513  <... mprotect resumed>)           = 0
+9514  read(3 <unfinished ...>
+9513  mprotect(0x7ff7da8e2000, 8192, PROT_READ <unfinished ...>
+9514  <... read resumed>, "", 4096)     = 0
+9514  close(3 <unfinished ...>
+9513  <... mprotect resumed>)           = 0
+9514  <... close resumed>)              = 0
+9514  openat(AT_FDCWD, "/usr/share/locale/en_US.UTF-8/LC_MESSAGES/gnulib.mo", O_RDONLY <unfinished ...>
+9513  prlimit64(0, RLIMIT_STACK, NULL <unfinished ...>
+9514  <... openat resumed>)             = -1 ENOENT (No such file or directory)
+9513  <... prlimit64 resumed>, {rlim_cur=8192*1024, rlim_max=RLIM64_INFINITY}) = 0
+9514  openat(AT_FDCWD, "/usr/share/locale/en_US.utf8/LC_MESSAGES/gnulib.mo", O_RDONLY) = -1 ENOENT (No such file or directory)
+9513  getrandom( <unfinished ...>
+9514  openat(AT_FDCWD, "/usr/share/locale/en_US/LC_MESSAGES/gnulib.mo", O_RDONLY <unfinished ...>
+9513  <... getrandom resumed>"\x42\xdc\x4c\x6f\x60\x0b\x53\x85", 8, GRND_NONBLOCK) = 8
+9514  <... openat resumed>)             = -1 ENOENT (No such file or directory)
+9514  openat(AT_FDCWD, "/usr/share/locale/en.UTF-8/LC_MESSAGES/gnulib.mo", O_RDONLY <unfinished ...>
+9513  munmap(0x7ff7da890000, 80555 <unfinished ...>
+9514  <... openat resumed>)             = -1 ENOENT (No such file or directory)
+9513  <... munmap resumed>)             = 0
+9514  openat(AT_FDCWD, "/usr/share/locale/en.utf8/LC_MESSAGES/gnulib.mo", O_RDONLY <unfinished ...>
+9513  prctl(PR_CAPBSET_READ, CAP_MAC_OVERRIDE <unfinished ...>
+9514  <... openat resumed>)             = -1 ENOENT (No such file or directory)
+9513  <... prctl resumed>)              = 1
+9514  openat(AT_FDCWD, "/usr/share/locale/en/LC_MESSAGES/gnulib.mo", O_RDONLY <unfinished ...>
+9513  prctl(PR_CAPBSET_READ, 0x30 /* CAP_??? */ <unfinished ...>
+9514  <... openat resumed>)             = -1 ENOENT (No such file or directory)
+9513  <... prctl resumed>)              = -1 EINVAL (Invalid argument)
+9514  openat(AT_FDCWD, "/proc/self/maps", O_RDONLY <unfinished ...>
+9513  prctl(PR_CAPBSET_READ, CAP_CHECKPOINT_RESTORE) = 1
+9514  <... openat resumed>)             = 3
+9513  prctl(PR_CAPBSET_READ, 0x2c /* CAP_??? */ <unfinished ...>
+9514  mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+9513  <... prctl resumed>)              = -1 EINVAL (Invalid argument)
+9514  <... mmap resumed>)               = 0x7fb1e3ddc000
+9513  prctl(PR_CAPBSET_READ, 0x2a /* CAP_??? */ <unfinished ...>
+9514  lseek(3, 0, SEEK_SET <unfinished ...>
+9513  <... prctl resumed>)              = -1 EINVAL (Invalid argument)
+9514  <... lseek resumed>)              = 0
+9513  prctl(PR_CAPBSET_READ, 0x29 /* CAP_??? */ <unfinished ...>
+9514  read(3 <unfinished ...>
+9513  <... prctl resumed>)              = -1 EINVAL (Invalid argument)
+9513  statfs("/sys/fs/selinux" <unfinished ...>
+9514  <... read resumed>, "555f79ca6000-555f79cc4000 r-xp 0"..., 8192) = 2564
+9513  <... statfs resumed>, {f_type=SELINUX_MAGIC, f_bsize=4096, f_blocks=0, f_bfree=0, f_bavail=0, f_files=0, f_ffree=0, f_fsid={val=[0x16, 0]}, f_namelen=255, f_frsize=4096, f_flags=ST_VALID|ST_NOSUID|ST_NOEXEC|ST_RELATIME}) = 0
+9514  read(3 <unfinished ...>
+9513  statfs("/sys/fs/selinux" <unfinished ...>
+9514  <... read resumed>, "", 5628)     = 0
+9513  <... statfs resumed>, {f_type=SELINUX_MAGIC, f_bsize=4096, f_blocks=0, f_bfree=0, f_bavail=0, f_files=0, f_ffree=0, f_fsid={val=[0x16, 0]}, f_namelen=255, f_frsize=4096, f_flags=ST_VALID|ST_NOSUID|ST_NOEXEC|ST_RELATIME}) = 0
+9514  close(3 <unfinished ...>
+9513  brk(NULL <unfinished ...>
+9514  <... close resumed>)              = 0
+9513  <... brk resumed>)                = 0x55a7df08f000
+9514  munmap(0x7fb1e3ddc000, 8192 <unfinished ...>
+9513  brk(0x55a7df0b0000 <unfinished ...>
+9514  <... munmap resumed>)             = 0
+9513  <... brk resumed>)                = 0x55a7df0b0000
+9514  sigaltstack({ss_sp=0x555f79cce1a0, ss_flags=0, ss_size=65536} <unfinished ...>
+9513  access("/etc/selinux/config", F_OK <unfinished ...>
+9514  <... sigaltstack resumed>, NULL)  = 0
+9514  rt_sigaction(SIGSEGV, {sa_handler=0x555f79cb7fc0, sa_mask=[HUP INT QUIT USR1 USR2 PIPE ALRM TERM CHLD URG XCPU XFSZ VTALRM PROF WINCH IO PWR], sa_flags=SA_RESTORER|SA_ONSTACK|SA_SIGINFO, sa_restorer=0x7fb1e3b49290} <unfinished ...>
+9513  <... access resumed>)             = 0
+9514  <... rt_sigaction resumed>, NULL, 8) = 0
+9514  rt_sigaction(SIGSEGV, {sa_handler=0x555f79cb7fc0, sa_mask=[HUP INT QUIT USR1 USR2 PIPE ALRM TERM CHLD URG XCPU XFSZ VTALRM PROF WINCH IO PWR], sa_flags=SA_RESTORER|SA_ONSTACK|SA_SIGINFO, sa_restorer=0x7fb1e3b49290} <unfinished ...>
+9513  openat(AT_FDCWD, "/usr/lib/locale/locale-archive", O_RDONLY|O_CLOEXEC <unfinished ...>
+9514  <... rt_sigaction resumed>, NULL, 8) = 0
+9513  <... openat resumed>)             = 3
+9514  fstat(1 <unfinished ...>
+9513  fstat(3 <unfinished ...>
+9514  <... fstat resumed>, {st_mode=S_IFCHR|0600, st_rdev=makedev(0x88, 0), ...}) = 0
+9513  <... fstat resumed>, {st_mode=S_IFREG|0644, st_size=233242544, ...}) = 0
+9514  newfstatat(AT_FDCWD, "/dev/null" <unfinished ...>
+9513  mmap(NULL, 233242544, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7ff7cc600000
+9514  <... newfstatat resumed>, {st_mode=S_IFCHR|0666, st_rdev=makedev(0x1, 0x3), ...}, 0) = 0
+9513  close(3)                          = 0
+9514  fstat(0, {st_mode=S_IFIFO|0600, st_size=0, ...}) = 0
+9513  ioctl(1, TCGETS2 <unfinished ...>
+9514  lseek(0, 0, SEEK_CUR <unfinished ...>
+9513  <... ioctl resumed>, 0x7fff5d7a7710) = -1 ENOTTY (Inappropriate ioctl for device)
+9514  <... lseek resumed>)              = -1 ESPIPE (Illegal seek)
+9514  read(0 <unfinished ...>
+9513  openat(AT_FDCWD, ".", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3
+9513  fstat(3, {st_mode=S_IFDIR|0755, st_size=198, ...}) = 0
+9513  getdents64(3, 0x55a7df095780 /* 16 entries */, 32768) = 480
+9513  getdents64(3, 0x55a7df095780 /* 0 entries */, 32768) = 0
+9513  close(3)                          = 0
+9513  fstat(1, {st_mode=S_IFIFO|0600, st_size=0, ...}) = 0
+9513  write(1, "build.sh\nerror.log\nfiles\nhello\nh"..., 108) = 108
+9514  <... read resumed>, "build.sh\nerror.log\nfiles\nhello\nh"..., 98304) = 108
+9513  close(1 <unfinished ...>
+9514  read(0 <unfinished ...>
+9513  <... close resumed>)              = 0
+9514  <... read resumed>, "", 98304)    = 0
+9513  close(2 <unfinished ...>
+9514  close(1 <unfinished ...>
+9513  <... close resumed>)              = 0
+9514  <... close resumed>)              = 0
+9514  close(2 <unfinished ...>
+9513  exit_group(0 <unfinished ...>
+9514  <... close resumed>)              = 0
+9513  <... exit_group resumed>)         = ?
+9514  exit_group(1)                     = ?
+9513  +++ exited with 0 +++
+8667  <... wait4 resumed>, NULL, 0, NULL) = 9513
+8667  wait4(9514 <unfinished ...>
+9514  +++ exited with 1 +++
+8667  <... wait4 resumed>, NULL, 0, NULL) = 9514
+8667  getpgrp()                         = 8633
+8667  ioctl(0, TIOCSPGRP, [8633])       = 0
+8667  ioctl(0, TCSETSW2, {c_iflag=ICRNL|IXON|IUTF8, c_oflag=NL0|CR0|TAB0|BS0|VT0|FF0|OPOST|ONLCR, c_cflag=B38400|B38400<<IBSHIFT|CS8|CREAD, c_lflag=ISIG|ICANON|ECHO|ECHOE|ECHOK|IEXTEN|ECHOCTL|ECHOKE, ...}) = 0
+8667  rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+8667  --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=9513, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+8667  wait4(-1, NULL, WNOHANG, NULL)    = -1 ECHILD (No child processes)
+8667  rt_sigreturn({mask=[]})           = 0
+8667  ioctl(0, TIOCGWINSZ, {ws_row=21, ws_col=80, ws_xpixel=0, ws_ypixel=0}) = 0
+8667  ioctl(0, TIOCSWINSZ, {ws_row=21, ws_col=80, ws_xpixel=0, ws_ypixel=0}) = 0
+8667  ioctl(0, TCGETS2, {c_iflag=ICRNL|IXON|IUTF8, c_oflag=NL0|CR0|TAB0|BS0|VT0|FF0|OPOST|ONLCR, c_cflag=B38400|B38400<<IBSHIFT|CS8|CREAD, c_lflag=ISIG|ICANON|ECHO|ECHOE|ECHOK|IEXTEN|ECHOCTL|ECHOKE, ...}) = 0
+8667  ioctl(0, TCSETSW2, {c_iflag=IXON|IUTF8, c_oflag=NL0|CR0|TAB0|BS0|VT0|FF0|OPOST|ONLCR, c_cflag=B38400|B38400<<IBSHIFT|CS8|CREAD, c_lflag=ISIG|ECHOE|ECHOK|IEXTEN|ECHOCTL|ECHOKE, ...}) = 0
+8667  write(1, "\33[?2004h", 8)         = 8
+8667  rt_sigprocmask(SIG_BLOCK, [HUP INT QUIT ALRM TERM TSTP TTIN TTOU], [], 8) = 0
+8667  rt_sigaction(SIGINT, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, 8) = 0
+8667  rt_sigaction(SIGTERM, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, 8) = 0
+8667  rt_sigaction(SIGHUP, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, 8) = 0
+8667  rt_sigaction(SIGQUIT, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, 8) = 0
+8667  rt_sigaction(SIGALRM, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, 8) = 0
+8667  rt_sigaction(SIGTSTP, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, 8) = 0
+8667  rt_sigaction(SIGTTOU, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, 8) = 0
+8667  rt_sigaction(SIGTTIN, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, 8) = 0
+8667  rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+8667  rt_sigaction(SIGWINCH, {sa_handler=0x7fe09934db90, sa_mask=[], sa_flags=SA_RESTORER|SA_RESTART, sa_restorer=0x7fe098d32290}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, 8) = 0
+8667  write(1, "$ ", 2)                 = 2
+8667  pselect6(1, [0], NULL, NULL, NULL, {sigmask=[], sigsetsize=8}) = 1 (in [0])
+8667  read(0, "e", 1)                   = 1
+8667  pselect6(1, [0], NULL, [0], {tv_sec=0, tv_nsec=0}, {sigmask=NULL, sigsetsize=8}) = 0 (Timeout)
+8667  write(1, "e", 1)                  = 1
+8667  pselect6(1, [0], NULL, NULL, NULL, {sigmask=[], sigsetsize=8}) = 1 (in [0])
+8667  read(0, "x", 1)                   = 1
+8667  pselect6(1, [0], NULL, [0], {tv_sec=0, tv_nsec=0}, {sigmask=NULL, sigsetsize=8}) = 0 (Timeout)
+8667  write(1, "x", 1)                  = 1
+8667  pselect6(1, [0], NULL, NULL, NULL, {sigmask=[], sigsetsize=8}) = 1 (in [0])
+8667  read(0, "i", 1)                   = 1
+8667  pselect6(1, [0], NULL, [0], {tv_sec=0, tv_nsec=0}, {sigmask=NULL, sigsetsize=8}) = 0 (Timeout)
+8667  write(1, "i", 1)                  = 1
+8667  pselect6(1, [0], NULL, NULL, NULL, {sigmask=[], sigsetsize=8}) = 1 (in [0])
+8667  read(0, "t", 1)                   = 1
+8667  pselect6(1, [0], NULL, [0], {tv_sec=0, tv_nsec=0}, {sigmask=NULL, sigsetsize=8}) = 0 (Timeout)
+8667  write(1, "t", 1)                  = 1
+8667  pselect6(1, [0], NULL, NULL, NULL, {sigmask=[], sigsetsize=8}) = 1 (in [0])
+8667  read(0, "\r", 1)                  = 1
+8667  write(1, "\n", 1)                 = 1
+8667  write(1, "\33[?2004l\r", 9)       = 9
+8667  ioctl(0, TCSETSW2, {c_iflag=ICRNL|IXON|IUTF8, c_oflag=NL0|CR0|TAB0|BS0|VT0|FF0|OPOST|ONLCR, c_cflag=B38400|B38400<<IBSHIFT|CS8|CREAD, c_lflag=ISIG|ICANON|ECHO|ECHOE|ECHOK|IEXTEN|ECHOCTL|ECHOKE, ...}) = 0
+8667  rt_sigaction(SIGINT, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, 8) = 0
+8667  rt_sigaction(SIGTERM, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, 8) = 0
+8667  rt_sigaction(SIGHUP, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, 8) = 0
+8667  rt_sigaction(SIGQUIT, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, 8) = 0
+8667  rt_sigaction(SIGALRM, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, 8) = 0
+8667  rt_sigaction(SIGTSTP, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, 8) = 0
+8667  rt_sigaction(SIGTTOU, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, 8) = 0
+8667  rt_sigaction(SIGTTIN, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=0x7fe09934db80, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, 8) = 0
+8667  rt_sigaction(SIGWINCH, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7fe098d32290}, {sa_handler=0x7fe09934db90, sa_mask=[], sa_flags=SA_RESTORER|SA_RESTART, sa_restorer=0x7fe098d32290}, 8) = 0
+8667  gettimeofday({tv_sec=1769573072, tv_usec=531482}, NULL) = 0
+8667  dup(1)                            = 3
+8667  dup(2)                            = 4
+8667  exit_group(0)                     = ?
+8667  +++ exited with 0 +++

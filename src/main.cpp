@@ -60,29 +60,25 @@ int main() {
   cerr << unitbuf;
 
   while (1) {
-    if (child_changed) {
-      child_changed = 0;
-      // iterate through the jobs list to find finished processes
-      // we use a safe iterator logic because we might erase items
-      auto it = jobs.begin();
-      while (it != jobs.end()) {
-        int status;
-        // WNOHANG returns the PID if it's dead, 0 if running, -1 if error
-        pid_t result = waitpid(it->pid, &status, WNOHANG);
-
-        if (result > 0 || (result == -1 && errno == ECHILD)) {
-          // the process is dead (or already reaped by the handler)
-          cout << "[" << (it - jobs.begin() + 1) << "]  + done       " << it->command << endl;
-          it = jobs.erase(it); // remove from list
-        } else {
-          ++it;
+    // reap all: cleans up kernel's process table
+    // we do this every loop iteration, even if child_changed == 0, to be safe against mixed signals
+    int status;
+    pid_t reaped_pid;
+    while ((reaped_pid = waitpid(-1, &status, WNOHANG)) > 0) {
+        // find the job in the list and mark it as finished
+        for (size_t i = 0; i < jobs.size(); ++i) {
+            if (jobs[i].pid == reaped_pid) {
+                cout << "\n[" << (i + 1) << "]  Done  " << jobs[i].command << endl;
+                jobs.erase(jobs.begin() + i);
+                break; 
+            }
         }
-      }
     }
+    child_changed = 0; // reset after reaping everything current
     char* input_ptr = readline("$ ");
     if (input_ptr == nullptr) {
       cout << endl;
-      break; 
+      break;
     }
     string input(input_ptr);
 
@@ -97,7 +93,7 @@ int main() {
     if (manual_history_list.size() > MAX_HISTORY) {
       manual_history_list.pop_front();
     }
-        
+
     vector<Token> tokens = parse(input);
 
     /*for (auto &tok : tokens)*/
@@ -124,7 +120,7 @@ int main() {
         vector<Token> current_cmd_tokens;
         bool is_bg = false;
 
-        // 1. Scan this specific sequence for the Background token
+        // scan this specific sequence for the Background token
         for (const auto &tok : seq) {
             if (tok.type == Background) {
                 is_bg = true;
@@ -132,9 +128,8 @@ int main() {
             }
         }
 
-        // 2. Build your pipeline as usual
         for (const auto &tok : seq) {
-            if (tok.type == Background) continue; // Don't pass '&' to the check() function
+            if (tok.type == Background) continue; // not passing & to check() 
             if (tok.type == Pipe) {
                 if (!current_cmd_tokens.empty()) {
                     pipeline.push_back(check(current_cmd_tokens));
@@ -148,7 +143,7 @@ int main() {
             pipeline.push_back(check(current_cmd_tokens));
         }
 
-        // 3. IMPORTANT: Transfer the flag to every command in the pipe
+        // transfer the flag to every command in pipe
         for (auto &ast : pipeline) {
             ast.is_background = is_bg;
         }
