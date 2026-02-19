@@ -1,5 +1,6 @@
 #include "executor.h"
 #include "utils.h"
+#include "security.h"
 #include <iostream>
 #include <unistd.h>
 #include <sys/wait.h>
@@ -151,8 +152,14 @@ void execute(const Tree &ast) {
     if (pid == 0) {
         sigprocmask(SIG_SETMASK, &oldmask, nullptr); 
 
+
+
         if (out_fd != -1) dup2(out_fd, STDOUT_FILENO);
         if (err_fd != -1) dup2(err_fd, STDERR_FILENO);
+
+        if(ast.is_jailed){
+          apply_jail_policy();
+        }
 
         vector<char*> argv;
         argv.push_back(const_cast<char*>(ast.value.c_str()));
@@ -179,9 +186,13 @@ void execute(const Tree &ast) {
 
                 if (WIFEXITED(status)) {
                     int code = WEXITSTATUS(status);
-                    if (code != 0) cout << "Error code " << code << " encountered" << endl;
+                    if (code != 0) cerr << "Error code " << code << " encountered" << endl;
                 } else if (WIFSIGNALED(status)) {
-                    cout << "Terminated by signal " << WTERMSIG(status) << endl;
+                  int sig = WTERMSIG(status);
+                  if(sig == 31 || sig == SIGSYS){
+                    cerr << "Security violation: Sandbox killed the process for an unauthorized system call" << endl;
+                  }
+                  else cerr << "Terminated by signal " << WTERMSIG(status) << endl;
                 }
             }
         } else {
@@ -212,7 +223,7 @@ void execute_child_logic(const Tree &ast) {
   for (size_t i = 0; i < ast.children.size(); i++) {
     string val = ast.children[i].value;
 
-    if ((val.find(">") != string::npos) && i + 1 < ast.children.size()) {
+    if ((val.find(">") != string::npos) && i + 1 < ast.children.size()){
         string filename = ast.children[i + 1].value;
         
         int flags = O_WRONLY | O_CREAT;
@@ -338,6 +349,10 @@ void execute_child_logic(const Tree &ast) {
   } break;
 
   case ExecutableFile: {
+
+    if(ast.is_jailed){
+      apply_jail_policy();
+    }
     vector<char*> argv;
     argv.push_back(const_cast<char*>(ast.value.c_str()));
 
@@ -445,7 +460,12 @@ void execute_pipeline(const vector<Tree> &pipeline) {
   }
   // then wait for the children/foreground
   for (int i = 0; i < n; i++) {
-    waitpid(children_pids[i], nullptr, 0);
+    int status;
+    if (waitpid(children_pids[i], &status, 0) > 0) {
+        if (WIFSIGNALED(status) && (WTERMSIG(status) == 31)) {
+            cerr << "Security violation: Pipeline stage " << i + 1 << " killed by sandbox" << endl;
+        }
+    }
   }
 
   // reclaim terminal

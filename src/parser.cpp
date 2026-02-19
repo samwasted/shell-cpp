@@ -176,10 +176,20 @@ vector<Token> parse(string in) {
 Tree check(vector<Token> &tokens) {
   if (tokens.empty()) return Tree{Leaf, "", {}};
 
-  Tree tree{Leaf, "", {}};
-  bool command_found = false;
 
-  for (size_t i = 0; i < tokens.size(); i++) {
+  bool jailed = false;
+  size_t start_index = 0;
+  bool command_found = false;
+  if(tokens[0].text == "jail"){
+    jailed = true;
+    start_index = 1; 
+  }
+  if (tokens.size() <= start_index) return Tree{Leaf, "", {}};
+  Tree tree{Leaf, "", {}};
+  tree.is_jailed = jailed;
+
+
+  for (size_t i = start_index; i < tokens.size(); i++) {
     const Token *cur = &tokens[i];
 
     switch (cur->type) {
@@ -200,6 +210,7 @@ Tree check(vector<Token> &tokens) {
           }
         }
         tree = node;
+        tree.is_jailed = jailed;
         command_found = true;
       } else {
         node = {TextNode, cur->text, "", {}};

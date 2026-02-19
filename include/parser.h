@@ -22,6 +22,7 @@ typedef struct Tree {
   fs::path path;
   std::vector<Tree> children;
   bool is_background = false;
+  bool is_jailed = false;
 } Tree;
 
 
