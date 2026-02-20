@@ -1,32 +1,60 @@
 #include <iostream>
-#include <fstream>
+#include <vector>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <sys/resource.h>
+#include <cstring>
+
 using namespace std;
-int main() {
-    cout << "[1] Testing STDOUT: This should work!" << endl;
 
-    // create a dummy file to try and delete
-    ofstream tmp("jail_test_file.txt");
-    tmp << "If you see this, the file was created before the jail.";
-    tmp.close();
+void test_network() {
+    cout << "[TEST] Attempting to create a socket..." << endl;
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (sock < 0) perror("  Result (Success)");
+    else { cout << "  Result (FAILURE: Network is open!)" << endl; close(sock); }
+}
 
-    cout << "[2] Attempting to DELETE a file (unlink)..." << endl;
-    if (unlink("jail_test_file.txt") == 0) {
-        cout << "SUCCESS: File deleted. (FAIL: Jail is leaky)" << endl;
-    } else {
-        perror("BLOCKED: Could not delete file");
+void test_fork_bomb() {
+    cout << "[TEST] Attempting to fork (Fork Bomb test)..." << endl;
+    for(int i = 0; i < 10; i++) {
+        pid_t p = fork();
+        if (p == 0) _exit(0); 
+        if (p < 0) {
+            cout << "  Result (Success): Fork blocked after " << i << " attempts." << endl;
+            return;
+        }
+    }
+}
+
+void test_memory() {
+    cout << "[TEST] Attempting to allocate 500MB (Memory Bomb test)..." << endl;
+    try {
+        // Try to allocate more than the 128MB limit
+        vector<char> v(500 * 1024 * 1024);
+        cout << "  Result (FAILURE: Memory not restricted!)" << endl;
+    } catch (...) {
+        cout << "  Result (Success): Allocation failed." << endl;
+    }
+}
+
+void test_cpu() {
+    cout << "[TEST] Starting infinite loop (CPU limit test)..." << endl;
+    cout << "  (You should see the shell kill this in ~2 seconds)" << endl;
+    while(true); 
+}
+
+int main(int argc, char* argv[]) {
+    if (argc < 2) {
+        cout << "Usage: jail ./test_sandbox [net|fork|mem|cpu]" << endl;
+        return 0;
     }
 
-    cout << "[3] Attempting to open a NETWORK socket..." << endl;
-    int s = socket(AF_INET, SOCK_STREAM, 0);
-    if (s != -1) {
-        cout << "SUCCESS: Socket opened. (FAIL: Jail is leaky)" << endl;
-        close(s);
-    } else {
-        perror("BLOCKED: Could not open socket");
-    }
+    string arg = argv[1];
+    if (arg == "net") test_network();
+    else if (arg == "fork") test_fork_bomb();
+    else if (arg == "mem") test_memory();
+    else if (arg == "cpu") test_cpu();
 
     return 0;
 }

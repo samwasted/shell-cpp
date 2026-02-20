@@ -158,6 +158,8 @@ void execute(const Tree &ast) {
         if (err_fd != -1) dup2(err_fd, STDERR_FILENO);
 
         if(ast.is_jailed){
+          // create a new network namespace, to effectively disconnect internet
+          unshare(CLONE_NEWNET);
           apply_jail_policy();
         }
 
@@ -168,6 +170,9 @@ void execute(const Tree &ast) {
         }
         argv.push_back(nullptr);
 
+        for (int i = 3; i < 1024; i++){
+            close(i); // for security, closing open fds for other programs
+        }
         execv(ast.path.c_str(), argv.data());
         perror("execv failed");
         exit(1);
@@ -351,6 +356,7 @@ void execute_child_logic(const Tree &ast) {
   case ExecutableFile: {
 
     if(ast.is_jailed){
+      unshare(CLONE_NEWNET);  
       apply_jail_policy();
     }
     vector<char*> argv;
@@ -360,7 +366,9 @@ void execute_child_logic(const Tree &ast) {
       argv.push_back(const_cast<char*>(child.value.c_str()));
     }
     argv.push_back(nullptr);
-
+    for (int i = 3; i < 1024; i++) {
+        close(i); // for safety, to prevent other programs from using open FDs
+    }
     // replace the child process image with the program
     execv(ast.path.c_str(), argv.data());
 
