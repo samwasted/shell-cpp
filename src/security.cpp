@@ -106,7 +106,7 @@ void apply_jail_policy() {
 
     if (seccomp_load(ctx) < 0) {
         perror("seccomp_load"); 
-        exit(1);
+        _exit(1);
     }
     seccomp_release(ctx);
 }

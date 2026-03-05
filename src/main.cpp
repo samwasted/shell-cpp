@@ -42,7 +42,7 @@ void setup_sigchld() {
 
     if (sigaction(SIGCHLD, &sa, nullptr) == -1) {
         perror("sigaction");
-        exit(1);
+        _exit(1);
     }
 }
 

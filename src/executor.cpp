@@ -70,7 +70,7 @@ void execute(const Tree &ast) {
       }
       cout << endl;
     } else if (ast.value == "exit") {
-      exit(0);
+      _exit(0);
     } else if (ast.value == "pwd") {
       cout << fs::current_path().c_str() << endl;
     } else if (ast.value == "type") {
@@ -159,7 +159,10 @@ void execute(const Tree &ast) {
 
         if(ast.is_jailed){
           // create a new network namespace, to effectively disconnect internet
-          unshare(CLONE_NEWNET);
+          if (unshare(CLONE_NEWUSER | CLONE_NEWNET) < 0) {
+            perror("unshare failed");
+            _exit(1); 
+          }
           apply_jail_policy();
         }
 
@@ -175,7 +178,7 @@ void execute(const Tree &ast) {
         }
         execv(ast.path.c_str(), argv.data());
         perror("execv failed");
-        exit(1);
+        _exit(1);
 
     } else if (pid > 0) {
         if (out_fd != -1) close(out_fd);
@@ -184,22 +187,23 @@ void execute(const Tree &ast) {
         if (!ast.is_background) {
             // FOREGROUND: The shell waits
             int status;
-            if (waitpid(pid, &status, WUNTRACED) > 0) {
-                // reclaim terminal
-                tcsetpgrp(STDIN_FILENO, getpgrp());
-                tcsetattr(STDIN_FILENO, TCSADRAIN, &shell_tmodes);
-
-                if (WIFEXITED(status)) {
-                    int code = WEXITSTATUS(status);
-                    if (code != 0) cerr << "Error code " << code << " encountered" << endl;
-                } else if (WIFSIGNALED(status)) {
-                  int sig = WTERMSIG(status);
-                  if(sig == 31 || sig == SIGSYS){
-                    cerr << "Security violation: Sandbox killed the process for an unauthorized system call" << endl;
-                  }
-                  else cerr << "Terminated by signal " << WTERMSIG(status) << endl;
-                }
+            while (waitpid(pid, &status, WUNTRACED) < 0) {
+                if (errno != EINTR) break; 
             }
+            // reclaim terminal
+            tcsetpgrp(STDIN_FILENO, getpgrp());
+            tcsetattr(STDIN_FILENO, TCSADRAIN, &shell_tmodes);
+
+            if (WIFEXITED(status)) {
+                int code = WEXITSTATUS(status);
+                if (code != 0) cerr << "Error code " << code << " encountered" << endl;
+            } else if (WIFSIGNALED(status)) {
+              int sig = WTERMSIG(status);
+              if(sig == 31 || sig == SIGSYS){
+                cerr << "Security violation: Sandbox killed the process for an unauthorized system call" << endl;
+              }
+              else cerr << "Terminated by signal " << WTERMSIG(status) << endl;
+            } 
         } else {
             // BACKGROUND: The shell records and moves on immediately
             jobs.push_back({pid, ast.value, true});
@@ -260,7 +264,7 @@ void execute_child_logic(const Tree &ast) {
   if (out_fd != -1) {
     if (dup2(out_fd, STDOUT_FILENO) < 0) { 
       perror("dup2 stdout"); 
-      exit(1); 
+      _exit(1); 
     }
     close(out_fd);
   }
@@ -268,7 +272,7 @@ void execute_child_logic(const Tree &ast) {
   if (err_fd != -1) {
     if (dup2(err_fd, STDERR_FILENO) < 0) { 
       perror("dup2 stderr"); 
-      exit(1); 
+      _exit(1); 
     }
     close(err_fd);
   }
@@ -291,7 +295,7 @@ void execute_child_logic(const Tree &ast) {
       }
       cout << endl;
     } else if (ast.value == "exit") {
-      exit(0);
+      _exit(0);
     } else if (ast.value == "pwd") {
       cout << fs::current_path().c_str() << endl;
     } else if (ast.value == "type") {
@@ -315,7 +319,7 @@ void execute_child_logic(const Tree &ast) {
 
           if (!is_numeric) {
               cerr << "history: " << arg << ": numeric argument required" << endl;
-              exit(1);
+              _exit(1);
           }
 
           if (filtered_children.size() > 1) {
@@ -356,7 +360,10 @@ void execute_child_logic(const Tree &ast) {
   case ExecutableFile: {
 
     if(ast.is_jailed){
-      unshare(CLONE_NEWNET);  
+      if (unshare(CLONE_NEWUSER | CLONE_NEWNET) < 0) {
+            perror("unshare failed");
+            _exit(1); 
+      }
       apply_jail_policy();
     }
     vector<char*> argv;
@@ -373,13 +380,13 @@ void execute_child_logic(const Tree &ast) {
     execv(ast.path.c_str(), argv.data());
 
     perror("execv failed");
-    exit(1);
+    _exit(1);
   } break;
 
   default:
     // ensure error messages go to current STDERR (which might be redirected)
     cerr << ast.value << ": command not found" << endl;
-    exit(1);
+    _exit(1);
     break;
   }
 }
@@ -429,7 +436,7 @@ void execute_pipeline(const vector<Tree> &pipeline) {
       }
 
       execute_child_logic(pipeline[i]);
-      exit(0);
+      _exit(0);
     } else if (pid < 0) {
       perror("fork failed");
     } else if (pid > 0) {
