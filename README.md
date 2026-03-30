@@ -14,7 +14,8 @@ Built this to understand how shells actually work under the hood — signal hand
 - Output/error redirection: `>`, `>>`, `1>`, `1>>`, `2>`, `2>>`
 - Sequential commands with `;`
 - Background execution with `&`, plus async `SIGCHLD` reaping
-- `jail` prefix to run commands in a seccomp sandbox (network isolation, syscall whitelist, resource limits)
+- `jail` prefix with option parsing (`--cpu`, `--mem`, `--no-net`, `--help`) to run commands in a seccomp sandbox
+- Correct SIGPIPE semantics for pipelines (`yes | head -n 1` exits cleanly)
 
 ## Structure
 
@@ -59,7 +60,9 @@ $ jail --help
 
 What happens under the hood:
 - `unshare(CLONE_NEWUSER | CLONE_NEWNS | CLONE_NEWPID [+ CLONE_NEWNET with --no-net])` — isolates user/mount/pid namespaces, and optionally network.
+- Process is moved into a restricted root using bind mounts + `chroot`, so the child gets an isolated filesystem view.
 - `prctl(PR_SET_NO_NEW_PRIVS)` — can't escalate privileges.
+- Linux capabilities are dropped (`capset` + bounding-set drop), so privileged kernel capabilities are removed before exec.
 - seccomp filter (default-kill policy) — only whitelisted syscalls go through. Everything else terminates the process immediately (`SCMP_ACT_KILL`). `openat` is only allowed read-only. `write` is restricted to fd 1 and 2.
 - `setrlimit` — configurable CPU and memory limits (`--cpu`, `--mem`), max 3 child processes.
 - All FDs above 2 are closed before `execv`.
@@ -84,6 +87,9 @@ $ jail --wat /bin/echo should-fail
 
 $ jail --cpu 2 --mem 128M --no-net ping -c 1 1.1.1.1
 # expected: network operation fails inside jail
+
+$ yes | head -n 1
+# expected: prints one line and returns immediately
 ```
 
 ### Scripted testing (optional)
@@ -186,6 +192,14 @@ void sigchld_handler(int sig) {
 Background job completion ("Done") is printed at the top of the REPL loop, not inside the signal handler. This is intentional: if you print from the handler, you'll corrupt whatever the user is currently typing into readline. The trade-off is that you only see the notification after hitting Enter.
 
 The "real" fix would be to call `rl_redisplay()` from the handler to refresh the prompt, but that introduces a lot of complexity around making readline cooperate with async output. Not worth it for this project.
+
+### SIGPIPE behavior in pipelines
+
+The shell process ignores `SIGPIPE` so it doesn't die if it ever writes to a closed pipe.
+
+Child processes restore `SIGPIPE` to default before `execv()`, which preserves normal Unix behavior for tools in pipelines.
+
+Example: in `yes | head -n 1`, `head` exits after one line and `yes` receives `SIGPIPE` and terminates.
 
 ### `dup2` over `dup3`
 

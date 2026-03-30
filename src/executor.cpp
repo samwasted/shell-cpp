@@ -11,6 +11,16 @@
 #define ALL(s) (s).begin(), (s).end()
 using namespace std;
 
+namespace {
+void restore_child_signals() {
+  struct sigaction sa;
+  sa.sa_handler = SIG_DFL;
+  sigemptyset(&sa.sa_mask);
+  sa.sa_flags = 0;
+  sigaction(SIGPIPE, &sa, nullptr);
+}
+}
+
 void execute(const Tree &ast) {
   if (ast.is_help) {
     cout << ast.help_message;
@@ -161,6 +171,7 @@ void execute(const Tree &ast) {
 
     if (pid == 0) {
         sigprocmask(SIG_SETMASK, &oldmask, nullptr); 
+      restore_child_signals();
 
 
 
@@ -441,6 +452,7 @@ void execute_pipeline(const vector<Tree> &pipeline) {
 
       // unblock signals in the child
       sigprocmask(SIG_SETMASK, &oldmask, nullptr);
+      restore_child_signals();
 
       // redirect input from previous pipe
       if (i > 0) {

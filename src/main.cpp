@@ -46,6 +46,18 @@ void setup_sigchld() {
     }
 }
 
+void setup_sigpipe_ignore() {
+    struct sigaction sa;
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = SIG_IGN;
+    sigemptyset(&sa.sa_mask);
+
+    if (sigaction(SIGPIPE, &sa, nullptr) == -1) {
+        perror("sigaction SIGPIPE");
+        _exit(1);
+    }
+}
+
 int main() {
   // save the terminal state of the shell itself at startup
   if (tcgetattr(STDIN_FILENO, &shell_tmodes) < 0) {
@@ -53,6 +65,7 @@ int main() {
   }
 
   setup_sigchld();
+    setup_sigpipe_ignore();
 
   std::ios_base::sync_with_stdio(false);
   // flush after every cout / cerr

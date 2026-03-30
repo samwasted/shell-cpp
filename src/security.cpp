@@ -12,8 +12,11 @@
 #include <fcntl.h> 
 #include <unistd.h> 
 #include <sys/resource.h>
+#include <sys/syscall.h>
 #include <filesystem>
 #include <string>
+#include <linux/capability.h>
+#include <cerrno>
 
 namespace fs = std::filesystem;
 
@@ -34,6 +37,50 @@ void ensure_dir(const std::string& path) {
 void ensure_parent_dir(const std::string& path) {
     std::error_code ec;
     fs::create_directories(fs::path(path).parent_path(), ec);
+}
+
+int read_last_capability() {
+    int last_cap = 63;
+    int fd = open("/proc/sys/kernel/cap_last_cap", O_RDONLY);
+    if (fd < 0) return last_cap;
+
+    char buf[32] = {0};
+    ssize_t n = read(fd, buf, sizeof(buf) - 1);
+    close(fd);
+    if (n <= 0) return last_cap;
+
+    char* end = nullptr;
+    long parsed = std::strtol(buf, &end, 10);
+    if (end == buf || parsed < 0) return last_cap;
+    return static_cast<int>(parsed);
+}
+
+bool drop_all_capabilities() {
+    __user_cap_header_struct hdr{};
+    __user_cap_data_struct data[2]{};
+
+    hdr.version = _LINUX_CAPABILITY_VERSION_3;
+    hdr.pid = 0;
+    if (syscall(SYS_capset, &hdr, data) < 0) {
+        return false;
+    }
+
+#ifdef PR_CAP_AMBIENT
+    if (prctl(PR_CAP_AMBIENT, PR_CAP_AMBIENT_CLEAR_ALL, 0, 0, 0) < 0 && errno != EINVAL) {
+        return false;
+    }
+#endif
+
+    int last_cap = read_last_capability();
+    for (int cap = 0; cap <= last_cap; ++cap) {
+        if (prctl(PR_CAPBSET_DROP, cap, 0, 0, 0) < 0) {
+            if (errno == EINVAL || errno == EPERM) {
+                continue;
+            }
+            return false;
+        }
+    }
+    return true;
 }
 
 bool bind_mount(const std::string& src, const std::string& dst, bool read_only) {
@@ -171,6 +218,11 @@ void apply_jail_policy(const JailOptions& options) {
 
     if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) < 0) {
         perror("prctl"); 
+        _exit(1);
+    }
+
+    if (!drop_all_capabilities()) {
+        perror("drop capabilities");
         _exit(1);
     }
 
