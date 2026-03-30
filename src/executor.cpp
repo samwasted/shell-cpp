@@ -12,6 +12,16 @@
 using namespace std;
 
 void execute(const Tree &ast) {
+  if (ast.is_help) {
+    cout << ast.help_message;
+    return;
+  }
+
+  if (ast.is_error) {
+    cerr << ast.error_message << endl;
+    return;
+  }
+
   int out_fd = -1;
   int err_fd = -1;
   int saved_stdout = -1;
@@ -157,13 +167,13 @@ void execute(const Tree &ast) {
         if (out_fd != -1) dup2(out_fd, STDOUT_FILENO);
         if (err_fd != -1) dup2(err_fd, STDERR_FILENO);
 
-        if(ast.is_jailed){
-          // create a new network namespace, to effectively disconnect internet
-          if (unshare(CLONE_NEWUSER | CLONE_NEWNET) < 0) {
-            perror("unshare failed");
-            _exit(1); 
+        string exec_path = ast.path.string();
+        if (ast.is_jailed) {
+          if (enter_jail_environment(ast.path.string(), ast.jail_options, exec_path) < 0) {
+            perror("jail setup failed");
+            _exit(1);
           }
-          apply_jail_policy();
+          apply_jail_policy(ast.jail_options);
         }
 
         vector<char*> argv;
@@ -176,7 +186,7 @@ void execute(const Tree &ast) {
         for (int i = 3; i < 1024; i++){
             close(i); // for security, closing open fds for other programs
         }
-        execv(ast.path.c_str(), argv.data());
+        execv(exec_path.c_str(), argv.data());
         perror("execv failed");
         _exit(1);
 
@@ -224,6 +234,16 @@ void execute(const Tree &ast) {
   }
 }
 void execute_child_logic(const Tree &ast) {
+  if (ast.is_help) {
+    cout << ast.help_message;
+    _exit(0);
+  }
+
+  if (ast.is_error) {
+    cerr << ast.error_message << endl;
+    _exit(1);
+  }
+
   int out_fd = -1;
   int err_fd = -1;
   vector<Tree> filtered_children;
@@ -359,12 +379,13 @@ void execute_child_logic(const Tree &ast) {
 
   case ExecutableFile: {
 
-    if(ast.is_jailed){
-      if (unshare(CLONE_NEWUSER | CLONE_NEWNET) < 0) {
-            perror("unshare failed");
-            _exit(1); 
+    string exec_path = ast.path.string();
+    if (ast.is_jailed) {
+      if (enter_jail_environment(ast.path.string(), ast.jail_options, exec_path) < 0) {
+            perror("jail setup failed");
+            _exit(1);
       }
-      apply_jail_policy();
+      apply_jail_policy(ast.jail_options);
     }
     vector<char*> argv;
     argv.push_back(const_cast<char*>(ast.value.c_str()));
@@ -377,7 +398,7 @@ void execute_child_logic(const Tree &ast) {
         close(i); // for safety, to prevent other programs from using open FDs
     }
     // replace the child process image with the program
-    execv(ast.path.c_str(), argv.data());
+    execv(exec_path.c_str(), argv.data());
 
     perror("execv failed");
     _exit(1);

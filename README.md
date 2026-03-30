@@ -51,12 +51,48 @@ Prefix any command with `jail` to lock it down:
 $ jail ./sketchy_binary
 ```
 
+Show available jail options:
+
+```
+$ jail --help
+```
+
 What happens under the hood:
-- `unshare(CLONE_NEWUSER | CLONE_NEWNET)` — drops the process into its own network namespace. No internet.
+- `unshare(CLONE_NEWUSER | CLONE_NEWNS | CLONE_NEWPID [+ CLONE_NEWNET with --no-net])` — isolates user/mount/pid namespaces, and optionally network.
 - `prctl(PR_SET_NO_NEW_PRIVS)` — can't escalate privileges.
 - seccomp filter (default-kill policy) — only whitelisted syscalls go through. Everything else terminates the process immediately (`SCMP_ACT_KILL`). `openat` is only allowed read-only. `write` is restricted to fd 1 and 2.
-- `setrlimit` — 2s CPU, 128MB memory, max 3 child processes.
+- `setrlimit` — configurable CPU and memory limits (`--cpu`, `--mem`), max 3 child processes.
 - All FDs above 2 are closed before `execv`.
+
+### Interactive testing (recommended)
+
+Run these directly inside `./myshell`:
+
+```
+$ jail --help
+
+$ jail --cpu 5 --mem 256M echo hello
+
+$ jail --mem bad /bin/echo should-fail
+# expected: jail: invalid --mem value 'bad'
+
+$ jail --cpu nope /bin/echo should-fail
+# expected: jail: invalid --cpu value 'nope'
+
+$ jail --wat /bin/echo should-fail
+# expected: jail: unknown option '--wat'
+
+$ jail --cpu 2 --mem 128M --no-net ping -c 1 1.1.1.1
+# expected: network operation fails inside jail
+```
+
+### Scripted testing (optional)
+
+If you want repeatable non-interactive tests, piping commands is fine too:
+
+```bash
+printf "jail --help\njail --cpu 5 --mem 256M echo hello\nexit\n" | ./myshell
+```
 
 There's a `test_security.cpp` you can compile separately to verify each constraint:
 

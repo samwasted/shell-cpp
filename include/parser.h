@@ -6,6 +6,7 @@
 #include <deque>
 #include <iostream>
 #include <filesystem>
+#include "security.h"
 namespace fs = std::filesystem;
 
 enum TokenT { PlainText, SingleQuoted, Pipe, Semicolon, WhitespaceTk, RedirectOut, Background };
@@ -23,6 +24,11 @@ typedef struct Tree {
   std::vector<Tree> children;
   bool is_background = false;
   bool is_jailed = false;
+  JailOptions jail_options{};
+  bool is_help = false;
+  std::string help_message;
+  bool is_error = false;
+  std::string error_message;
 } Tree;
 
 

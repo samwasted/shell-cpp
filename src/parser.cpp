@@ -2,9 +2,78 @@
 #include "utils.h" // Needed because check() calls find_in_path()
 #include <algorithm>
 #include <cctype>
+#include <cstdint>
 #include <sstream>
 #define ALL(s) (s).begin(), (s).end()
 using namespace std;
+
+namespace {
+string jail_help_text() {
+  return "Usage: jail [--cpu SECONDS] [--mem SIZE] [--no-net] COMMAND [ARGS...]\n"
+         "\n"
+         "Options:\n"
+         "  --help          Show this help and exit\n"
+         "  --cpu N         CPU time limit in seconds (default: 2)\n"
+         "  --mem SIZE      Address space limit, e.g. 256M, 1G, 65536K (default: 128M)\n"
+         "  --no-net        Disable networking with CLONE_NEWNET\n";
+}
+
+bool parse_positive_int(const string& s, int& out) {
+  if (s.empty()) return false;
+  for (char c : s) {
+    if (!isdigit(static_cast<unsigned char>(c))) return false;
+  }
+  try {
+    long long v = stoll(s);
+    if (v <= 0 || v > INT32_MAX) return false;
+    out = static_cast<int>(v);
+    return true;
+  } catch (...) {
+    return false;
+  }
+}
+
+bool parse_memory_bytes(const string& input, size_t& out_bytes) {
+  if (input.empty()) return false;
+
+  size_t pos = 0;
+  while (pos < input.size() && isdigit(static_cast<unsigned char>(input[pos]))) {
+    pos++;
+  }
+  if (pos == 0) return false;
+
+  string number_part = input.substr(0, pos);
+  string unit_part = input.substr(pos);
+  transform(unit_part.begin(), unit_part.end(), unit_part.begin(), [](unsigned char c) {
+    return static_cast<char>(toupper(c));
+  });
+
+  unsigned long long value = 0;
+  try {
+    value = stoull(number_part);
+  } catch (...) {
+    return false;
+  }
+  if (value == 0) return false;
+
+  unsigned long long multiplier = 1;
+  if (unit_part.empty() || unit_part == "B") {
+    multiplier = 1;
+  } else if (unit_part == "K" || unit_part == "KB") {
+    multiplier = 1024ULL;
+  } else if (unit_part == "M" || unit_part == "MB") {
+    multiplier = 1024ULL * 1024ULL;
+  } else if (unit_part == "G" || unit_part == "GB") {
+    multiplier = 1024ULL * 1024ULL * 1024ULL;
+  } else {
+    return false;
+  }
+
+  if (value > (numeric_limits<size_t>::max() / multiplier)) return false;
+  out_bytes = static_cast<size_t>(value * multiplier);
+  return true;
+}
+} // namespace
 
 
 ostream &operator<<(ostream &os, const Token &tok) { // changing the way how cout<< works, to debug token
@@ -28,6 +97,9 @@ ostream &operator<<(ostream &os, const Token &tok) { // changing the way how cou
     break;
   case RedirectOut:
     os << "RedirectOut, ";
+    break;
+  case Background:
+    os << "Background, ";
     break;
   }
   os << "text: " << tok.text;
@@ -134,11 +206,11 @@ vector<Token> parse(string in) {
       else if (in[i] == '\'') {
         // single quotes: take everything literally until the closing '
         i++;
-        while (i < in.size() && in[i] != '\'') {
+        while (i < in.size() && in[i] != '\''){
           current_argument += in[i];
           i++;
         }
-        if (i < in.size()) i++; 
+        if (i < in.size()) i++;
       } 
       else if (in[i] == '\"') {
         // double quotes:handle specific escape rules inside "..."
@@ -178,15 +250,68 @@ Tree check(vector<Token> &tokens) {
 
 
   bool jailed = false;
+  JailOptions jail_options;
   size_t start_index = 0;
   bool command_found = false;
-  if(tokens[0].text == "jail"){
+  if (tokens[0].text == "jail") {
     jailed = true;
-    start_index = 1; 
+    start_index = 1;
+
+    while (start_index < tokens.size() && tokens[start_index].type == PlainText &&
+           !tokens[start_index].text.empty() && tokens[start_index].text[0] == '-') {
+      const string &opt = tokens[start_index].text;
+      if (opt == "--help") {
+        Tree help{Leaf, "", {}};
+        help.is_help = true;
+        help.help_message = jail_help_text();
+        return help;
+      } else if (opt == "--no-net") {
+        jail_options.disable_network = true;
+        start_index++;
+      } else if (opt == "--cpu") {
+        if (start_index + 1 >= tokens.size() || tokens[start_index + 1].type != PlainText) {
+          Tree err{Leaf, "", {}};
+          err.is_error = true;
+          err.error_message = "jail: --cpu requires a positive integer value";
+          return err;
+        }
+        int cpu_limit = 0;
+        if (!parse_positive_int(tokens[start_index + 1].text, cpu_limit)) {
+          Tree err{Leaf, "", {}};
+          err.is_error = true;
+          err.error_message = "jail: invalid --cpu value '" + tokens[start_index + 1].text + "'";
+          return err;
+        }
+        jail_options.cpu_limit_seconds = cpu_limit;
+        start_index += 2;
+      } else if (opt == "--mem") {
+        if (start_index + 1 >= tokens.size() || tokens[start_index + 1].type != PlainText) {
+          Tree err{Leaf, "", {}};
+          err.is_error = true;
+          err.error_message = "jail: --mem requires a value like 256M";
+          return err;
+        }
+        size_t mem_bytes = 0;
+        if (!parse_memory_bytes(tokens[start_index + 1].text, mem_bytes)) {
+          Tree err{Leaf, "", {}};
+          err.is_error = true;
+          err.error_message = "jail: invalid --mem value '" + tokens[start_index + 1].text + "'";
+          return err;
+        }
+        jail_options.memory_limit_bytes = mem_bytes;
+        start_index += 2;
+      } else {
+        Tree err{Leaf, "", {}};
+        err.is_error = true;
+        err.error_message = "jail: unknown option '" + opt + "'";
+        return err;
+      }
+    }
   }
   if (tokens.size() <= start_index) return Tree{Leaf, "", {}};
   Tree tree{Leaf, "", {}};
   tree.is_jailed = jailed;
+  tree.jail_options = jail_options;
 
 
   for (size_t i = start_index; i < tokens.size(); i++) {
@@ -211,6 +336,7 @@ Tree check(vector<Token> &tokens) {
         }
         tree = node;
         tree.is_jailed = jailed;
+        tree.jail_options = jail_options;
         command_found = true;
       } else {
         node = {TextNode, cur->text, "", {}};
@@ -224,19 +350,21 @@ Tree check(vector<Token> &tokens) {
 
     case Pipe:
       // handled by build_pipeline_trees()
-      break;
-    case Semicolon:
-      break;
-    case RedirectOut:
+      break; 
+    case Semicolon: 
+      break; 
+    case Background: 
+      break; 
+    case RedirectOut: 
       if (i + 1 < tokens.size()) {
-            // use cur->text to capture ">", ">>", "1>>", "2>>"
+            // use cur->text to capture ">", ">>", "1>>", "2>>" 
             tree.children.emplace_back(Tree{TextNode, cur->text, {}}); 
             tree.children.emplace_back(Tree{TextNode, tokens[i+1].text, {}}); 
             i++; 
-        }
-      break;
-    }
-  }
+        } 
+      break; 
+    } 
+  } 
 
   return tree;
 }
