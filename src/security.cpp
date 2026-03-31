@@ -16,11 +16,21 @@
 #include <filesystem>
 #include <string>
 #include <linux/capability.h>
+#include <iostream>
 #include <cerrno>
+#include <signal.h>
 
 namespace fs = std::filesystem;
 
 namespace {
+
+void sigsys_handler(int signum, siginfo_t *info, void *context) {
+    if (info) {
+        std::cerr << "\n>>> SECCOMP TRAP: Syscall number " << info->si_syscall << " was blocked! <<<\n" << std::endl;
+    }
+    _exit(128 + SIGSYS);
+}
+
 bool write_text_file(const std::string& path, const std::string& text) {
     int fd = open(path.c_str(), O_WRONLY);
     if (fd < 0) return false;
@@ -40,7 +50,7 @@ void ensure_parent_dir(const std::string& path) {
 }
 
 int read_last_capability() {
-    int last_cap = 63;
+    int last_cap = 63; // root capability
     int fd = open("/proc/sys/kernel/cap_last_cap", O_RDONLY);
     if (fd < 0) return last_cap;
 
@@ -111,17 +121,21 @@ bool bind_mount(const std::string& src, const std::string& dst, bool read_only) 
     return true;
 }
 
-bool setup_user_namespace_mapping() {
-    if (!write_text_file("/proc/self/setgroups", "deny")) {
+bool setup_user_namespace_mapping(pid_t child_pid) {
+    std::string setgroups_path = "/proc/" + std::to_string(child_pid) + "/setgroups";
+    std::string uid_map_path = "/proc/" + std::to_string(child_pid) + "/uid_map";
+    std::string gid_map_path = "/proc/" + std::to_string(child_pid) + "/gid_map";
+
+    if (!write_text_file(setgroups_path, "deny")) {
         // Some kernels may not allow writing setgroups; continue to uid/gid maps.
     }
     uid_t uid = getuid();
     gid_t gid = getgid();
 
-    if (!write_text_file("/proc/self/uid_map", "0 " + std::to_string(uid) + " 1\n")) {
+    if (!write_text_file(uid_map_path, "0 " + std::to_string(uid) + " 1\n")) {
         return false;
     }
-    if (!write_text_file("/proc/self/gid_map", "0 " + std::to_string(gid) + " 1\n")) {
+    if (!write_text_file(gid_map_path, "0 " + std::to_string(gid) + " 1\n")) {
         return false;
     }
     return true;
@@ -130,84 +144,220 @@ bool setup_user_namespace_mapping() {
 bool setup_restricted_root(const std::string& exec_path) {
     char template_path[] = "/tmp/myshell-jail-XXXXXX";
     char* jail_root = mkdtemp(template_path);
-    if (!jail_root) return false;
-
-    // Prevent mount propagation outside the jail namespace.
-    if (mount(nullptr, "/", nullptr, MS_REC | MS_PRIVATE, nullptr) < 0) {
+    if (!jail_root) {
+        perror("DEBUG: mkdtemp failed");
         return false;
     }
 
-    // Mount only runtime essentials and explicit command/cwd paths.
-    const char* base_mounts[] = {
-        "/bin", "/sbin", "/lib", "/lib64", "/usr", "/etc"
-    };
+    // 1. Make the jail root a private mount point (required for chroot)
+    if (mount(nullptr, "/", nullptr, MS_REC | MS_PRIVATE, nullptr) < 0) {
+        perror("DEBUG: mount MS_PRIVATE failed");
+        return false;
+    }
+
+    // 2. Mount essentials (UsrMerge)
+    const char* base_mounts[] = {"/usr", "/etc", "/var"};
     for (const char* p : base_mounts) {
         std::string dst = std::string(jail_root) + p;
-        if (!bind_mount(p, dst, true)) return false;
+        if (!bind_mount(p, dst, true)) {
+            std::cerr << "DEBUG: bind_mount failed for " << p << std::endl;
+            return false;
+        }
     }
 
-    std::string cwd = fs::current_path().string();
-    std::string cwd_dst = std::string(jail_root) + cwd;
-    if (!bind_mount(cwd, cwd_dst, true)) return false;
+    // 3. Recreate Fedora symlinks
+    symlink("usr/bin", (std::string(jail_root) + "/bin").c_str());
+    symlink("usr/sbin", (std::string(jail_root) + "/sbin").c_str());
+    symlink("usr/lib", (std::string(jail_root) + "/lib").c_str());
+    symlink("usr/lib64", (std::string(jail_root) + "/lib64").c_str());
 
-    std::string exec_parent = fs::path(exec_path).parent_path().string();
-    if (!exec_parent.empty()) {
-        std::string exec_parent_dst = std::string(jail_root) + exec_parent;
-        if (!bind_mount(exec_parent, exec_parent_dst, true)) return false;
+    // 4. Setup Workspace (The simple bind mount)
+    std::string src_cwd = fs::current_path().string();
+    std::string workspace_path = std::string(jail_root) + "/workspace";
+    
+    std::error_code ec;
+    fs::create_directories(workspace_path, ec);
+
+    // FIX: Using MS_BIND without MS_REC to avoid Btrfs subvolume errors
+    if (mount(src_cwd.c_str(), workspace_path.c_str(), nullptr, MS_BIND, nullptr) < 0) {
+        std::cerr << "DEBUG: mount bind failed for /workspace: " << strerror(errno) << " (Path: " << src_cwd << ")" << std::endl;
+        return false;
     }
 
+    // 5. Mount /proc
     std::string proc_dst = std::string(jail_root) + "/proc";
     ensure_dir(proc_dst);
     if (mount("proc", proc_dst.c_str(), "proc", 0, nullptr) < 0) {
+        perror("DEBUG: mount proc failed");
         return false;
     }
 
-    if (chroot(jail_root) < 0) return false;
-    if (chdir(cwd.c_str()) < 0) {
-        // Fall back to root inside jail if cwd is unavailable.
-        if (chdir("/") < 0) return false;
+    // 6. Enter the Jail
+    if (chroot(jail_root) < 0) {
+        perror("DEBUG: chroot failed");
+        return false;
     }
+
+    if (chdir("/workspace") < 0) {
+        perror("DEBUG: chdir to /workspace failed");
+        return false;
+    }
+
     return true;
 }
+
+bool setup_cgroup(pid_t child_pid, const JailOptions& options) {
+    // 1. Define a unique path for this specific jail instance
+    std::string cg_path = "/sys/fs/cgroup/myshell-" + std::to_string(child_pid);
+    
+    // 2. Create the directory (Kernel will populate it)
+    std::error_code ec;
+    fs::create_directories(cg_path, ec);
+    if (ec) {
+        perror("Failed to create cgroup directory");
+        return false;
+    }
+
+    // 3. Apply Limits (e.g., Memory)
+    // Here we limit physical RAM (RSS), allowing shared virtual memory to map fine!
+    std::string mem_limit = std::to_string(options.memory_limit_bytes);
+    if (!write_text_file(cg_path + "/memory.max", mem_limit)) {
+        std::cerr << "ERROR: Could not write to " << cg_path << "/memory.max\n";
+        return false;
+    }
+
+    // 4. Trap the child process in the cgroup
+    if (!write_text_file(cg_path + "/cgroup.procs", std::to_string(child_pid))) {
+        std::cerr << "ERROR: Could not write to " << cg_path << "/cgroup.procs\n";
+        return false;
+    }
+
+    return true;
+}
+
 } // namespace
 
 int enter_jail_environment(const std::string& exec_path,
                            const JailOptions& options,
                            std::string& jailed_exec_path) {
+    int p2c[2]; // parent to child sync
+    int c2p[2]; // child to parent sync
+    if (pipe(p2c) < 0 || pipe(c2p) < 0) {
+        return -1;
+    }
+
+    pid_t child_pid = fork();
+    if (child_pid < 0) {
+        return -1;
+    }
+
+    if (child_pid > 0) { // Parent process
+        close(p2c[0]);
+        close(c2p[1]);
+
+        char c;
+        if (read(c2p[0], &c, 1) != 1) { // Wait for child to unshare
+            _exit(1);
+        }
+
+        // Put the child in the cgroup before mapping UID
+        if (!setup_cgroup(child_pid, options)) {
+            perror("ERROR: setup_cgroup failed");
+            _exit(1);
+        }
+
+        if (!setup_user_namespace_mapping(child_pid)) {
+            perror("ERROR: setup_user_namespace_mapping failed");
+            _exit(1);
+        }
+
+        if (write(p2c[1], "A", 1) != 1) { // Wake up child
+            perror("ERROR: Failed to wake up child");
+            _exit(1);
+        }
+
+        close(p2c[1]);
+        close(c2p[0]);
+
+        int status = 0;
+        if (waitpid(child_pid, &status, 0) < 0) {
+            _exit(1);
+        }
+
+        // Clean up the cgroup after the child dies
+        std::error_code ec;
+        fs::remove_all("/sys/fs/cgroup/myshell-" + std::to_string(child_pid), ec);
+
+        if (WIFEXITED(status)) {
+            _exit(WEXITSTATUS(status));
+        }
+        if (WIFSIGNALED(status)) {
+            if (WTERMSIG(status) == SIGSYS) {
+                std::cerr << "DEBUG: Child killed by SECCOMP (SIGSYS)!" << std::endl;
+            }
+            _exit(128 + WTERMSIG(status));
+        }
+        _exit(1);
+    }
+
+    // Child process
+    close(p2c[1]);
+    close(c2p[0]);
+
     int flags = CLONE_NEWUSER | CLONE_NEWNS | CLONE_NEWPID;
     if (options.disable_network) {
         flags |= CLONE_NEWNET;
     }
 
     if (unshare(flags) < 0) {
-        return -1;
+        std::cerr << "DEBUG: unshare failed!" << std::endl;
+        _exit(1);
     }
 
-    if (!setup_user_namespace_mapping()) {
-        return -1;
+    // Tell parent we have unshared
+    if (write(c2p[1], "A", 1) != 1) {
+        std::cerr << "DEBUG: write to parent failed!" << std::endl;
+        _exit(1);
     }
 
-    pid_t pid = fork();
-    if (pid < 0) {
-        return -1;
+    // Wait for parent to set up UID/GID map
+    char c;
+    if (read(p2c[0], &c, 1) != 1) {
+        std::cerr << "DEBUG: read from parent failed!" << std::endl;
+        _exit(1);
     }
-    if (pid > 0) {
+
+    close(c2p[1]);
+    close(p2c[0]);
+
+    // Now we must fork again to become PID 1 in the new PID namespace
+    pid_t grandchild_pid = fork();
+    if (grandchild_pid < 0) {
+        std::cerr << "DEBUG: second fork failed!" << std::endl;
+        _exit(1);
+    }
+
+    if (grandchild_pid > 0) {
         int status = 0;
-        if (waitpid(pid, &status, 0) < 0) {
+        if (waitpid(grandchild_pid, &status, 0) < 0) {
             _exit(1);
         }
         if (WIFEXITED(status)) {
             _exit(WEXITSTATUS(status));
         }
         if (WIFSIGNALED(status)) {
+            if (WTERMSIG(status) == SIGSYS) {
+                std::cerr << "DEBUG: Grandchild killed by SECCOMP (SIGSYS)!" << std::endl;
+            }
             _exit(128 + WTERMSIG(status));
         }
         _exit(1);
     }
 
-    // Child continues as PID 1 in the new pid namespace.
+    // Grandchild continues as PID 1 in the new pid namespace.
     if (!setup_restricted_root(exec_path)) {
-        return -1;
+        std::cerr << "DEBUG: setup_restricted_root failed!" << std::endl;
+        _exit(1);
     }
 
     jailed_exec_path = exec_path;
@@ -233,17 +383,19 @@ void apply_jail_policy(const JailOptions& options) {
     rl.rlim_max = options.cpu_limit_seconds + 3;
     setrlimit(RLIMIT_CPU, &rl);
 
-    // memory limit: configurable with 2x hard ceiling.
-    rl.rlim_cur = options.memory_limit_bytes;
-    rl.rlim_max = options.memory_limit_bytes * 2;
-    setrlimit(RLIMIT_AS, &rl);
-
     // NPROC limit
     rl.rlim_cur = 3;
     rl.rlim_max = 4;
     setrlimit(RLIMIT_NPROC, &rl);
 
-    scmp_filter_ctx ctx = seccomp_init(SCMP_ACT_KILL);
+    // Setup an aggressive signal handler specifically to log SECCOMP traps
+    struct sigaction sa;
+    std::memset(&sa, 0, sizeof(sa));
+    sa.sa_flags = SA_SIGINFO;
+    sa.sa_sigaction = sigsys_handler;
+    sigaction(SIGSYS, &sa, nullptr);
+
+    scmp_filter_ctx ctx = seccomp_init(SCMP_ACT_TRAP);
 
     // essentials
     seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(execve), 0);
@@ -256,21 +408,25 @@ void apply_jail_policy(const JailOptions& options) {
 
     // file I/O and startup 
     // only allow openat if the flags (arg 2) do not include write permissions
+    seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(fcntl), 0);
     seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(openat), 1,
                      SCMP_A2(SCMP_CMP_MASKED_EQ, O_WRONLY | O_RDWR, 0));
-    
+    // allow reading directory contents 
+    seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(getdents64), 0);
+    seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(fstatfs), 0);
+    seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(statfs), 0);
     seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(read), 0);
     seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(getcwd), 0);
     seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(readlink), 0);
     seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(readlinkat), 0);
     
-    // only allow writing to STDOUT (1) or STDERR (2)
-    seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(write), 1,
-                     SCMP_A0(SCMP_CMP_EQ, STDOUT_FILENO));
-    seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(write), 1,
-                     SCMP_A0(SCMP_CMP_EQ, STDERR_FILENO));
+
+    seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(write), 0);
 
     seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(close), 0);
+    seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(dup), 0);
+    seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(dup2), 0);
+    seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(dup3), 0);
     seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(lseek), 0);
     seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(access), 0);
     

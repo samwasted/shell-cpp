@@ -44,7 +44,7 @@ make
 ./myshell
 ```
 
-## Sandbox (`jail`)
+## Linux Namespaces & Capabilities Sandbox (`jail`)
 
 Prefix any command with `jail` to lock it down:
 
@@ -59,11 +59,11 @@ $ jail --help
 ```
 
 What happens under the hood:
-- `unshare(CLONE_NEWUSER | CLONE_NEWNS | CLONE_NEWPID [+ CLONE_NEWNET with --no-net])` — isolates user/mount/pid namespaces, and optionally network.
+- **Linux Namespaces**: `unshare(CLONE_NEWUSER | CLONE_NEWNS | CLONE_NEWPID [+ CLONE_NEWNET with --no-net])` — isolates user, mount, PID, and optionally network namespaces.
+- **Capabilities Sandbox**: Linux capabilities are fully locked down (`capset` + bounding-set drop via `drop_all_capabilities()`), removing privileged kernel capabilities before exec.
+- **seccomp-bpf**: A massive, highly specific allowlist filters system calls via `apply_jail_policy()`. Everything else terminates the process immediately (`SCMP_ACT_KILL`). `openat` is only allowed read-only. `write` is restricted to fd 1 and 2.
 - Process is moved into a restricted root using bind mounts + `chroot`, so the child gets an isolated filesystem view.
 - `prctl(PR_SET_NO_NEW_PRIVS)` — can't escalate privileges.
-- Linux capabilities are dropped (`capset` + bounding-set drop), so privileged kernel capabilities are removed before exec.
-- seccomp filter (default-kill policy) — only whitelisted syscalls go through. Everything else terminates the process immediately (`SCMP_ACT_KILL`). `openat` is only allowed read-only. `write` is restricted to fd 1 and 2.
 - `setrlimit` — configurable CPU and memory limits (`--cpu`, `--mem`), max 3 child processes.
 - All FDs above 2 are closed before `execv`.
 
@@ -239,3 +239,24 @@ tcsetattr(STDIN_FILENO, TCSADRAIN, &shell_tmodes);
 `shell_tmodes` is captured at startup. If a child process messes with terminal settings (raw mode, disabling echo, etc.) and then crashes without restoring them, the shell would inherit a broken terminal. This restores sanity.
 
 ---
+
+### The `CLONE_NEWUSER` Catch-22 (IPC Handshake)
+
+When sandboxing a process, it needs to be `root` inside its own namespace to set up `chroot` and mounts. The scenario:
+1. Child calls `unshare(CLONE_NEWUSER)` to isolate itself.
+2. To act as `root` inside this new bubble, it needs to map its UID to 0 by writing to `/proc/self/uid_map`.
+3. The catch: Because it just unshared, it lost all capabilities in the parent namespace and is now the `nobody` user. The kernel immediately denies the write (`EPERM`).
+
+The fix: A highly synchronized parent-child handshake using bidirectional pipes. 
+The child unshares and immediately blocks (reading from a pipe). The parent—which is still outside the jail and retains host privileges—intercepts this, writes the UID mapping to the child's `/proc/[pid]/uid_map`, and then writes a byte to the pipe to wake the child up. The child resumes execution with its newly granted authority.
+
+### The `CLONE_NEWPID` Trap
+
+When isolating a process's PID, you might assume calling `unshare(CLONE_NEWPID)` teleports the process into a new PID namespace. 
+
+It doesn't. In Linux, a process can *never* change its own PID. `unshare(CLONE_NEWPID)` only dictates that the process's *future children* will be put into a new namespace. If you just unshare and `execv()` the payload, the untrusted code still runs in the host's PID namespace, completely defeating the sandbox and leaking zombie processes.
+
+The fix: The "Midwife" pattern (a strict double-fork).
+1. The shell forks Child 1 (The Midwife).
+2. The Midwife calls `unshare(CLONE_NEWPID)` and immediately forks Child 2.
+3. Child 2 is born directly inside the new namespace and is granted **PID 1**. It acts as the `init` process for the sandbox, capable of reaping orphans and ensuring the kernel cleanly destroys the entire namespace when the payload exits.

@@ -152,7 +152,7 @@ void execute(const Tree &ast) {
     }
 
     // restore parent descriptors
-    if (saved_stdout != -1) {   
+    if (saved_stdout != -1) {
       dup2(saved_stdout, STDOUT_FILENO);
       close(saved_stdout);
     }
@@ -161,7 +161,7 @@ void execute(const Tree &ast) {
       close(saved_stderr);
     }
 
-  } else if (ast.type == ExecutableFile) {
+  } else if (ast.type == ExecutableFile){
     sigset_t mask, oldmask;
     sigemptyset(&mask);
     sigaddset(&mask, SIGCHLD);
