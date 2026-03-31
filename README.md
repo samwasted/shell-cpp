@@ -59,12 +59,14 @@ $ jail --help
 ```
 
 What happens under the hood:
-- **Linux Namespaces**: `unshare(CLONE_NEWUSER | CLONE_NEWNS | CLONE_NEWPID [+ CLONE_NEWNET with --no-net])` — isolates user, mount, PID, and optionally network namespaces.
+- **Linux Namespaces**: `unshare(CLONE_NEWUSER | CLONE_NEWNS | CLONE_NEWPID [+ CLONE_NEWNET with --no-net])` — isolates user, mount, PID, and optionally network namespaces. 
+- **Ephemeral Sandbox Workspace**: `myshell` uses `mkdtemp` to construct an entirely new `/tmp/myshell-jail-XXXXXX` environment every single run. It sets up private recursive mounts (`MS_PRIVATE`) and recreates modern UsrMerge system root linkages (symlinking `/bin` to `/usr/bin`, etc.) so that binaries work out-of-the-box on systems like Fedora and modern Debian. Handles Btrfs-specific subvolume boundary issues by using precise `MS_BIND` flag sequencing rather than generic recursive mounts.
+- **Hard Copy Sandbox**: Instead of opening up a risky bind-mount portal into your actual working directory, `myshell` securely transplants the target executable into an isolated `/workspace` directory via `std::filesystem::copy_file`. The binary runs in total isolation from your host files.
+- **Cgroups v2 Limits**: Instead of solely relying on easily-bypassed `setrlimit` boundaries, physical memory and resources are now constrained using genuine Linux Control Groups (`/sys/fs/cgroup/myshell-<pid>`).
+- **Zero Footprint Exit**: A custom bi-directional IPC pipe cleanly syncs initialization between the parent and forked child/grandchild (preventing race conditions during ID mapping). The moment the untrusted process exits, the parent catches `waitpid` and immediately shreds the entire temporary filesystem workspace and kernel `cgroups` block, leaving absolutely zero detritus behind.
 - **Capabilities Sandbox**: Linux capabilities are fully locked down (`capset` + bounding-set drop via `drop_all_capabilities()`), removing privileged kernel capabilities before exec.
 - **seccomp-bpf**: A massive, highly specific allowlist filters system calls via `apply_jail_policy()`. Everything else terminates the process immediately (`SCMP_ACT_KILL`). `openat` is only allowed read-only. `write` is restricted to fd 1 and 2.
-- Process is moved into a restricted root using bind mounts + `chroot`, so the child gets an isolated filesystem view.
 - `prctl(PR_SET_NO_NEW_PRIVS)` — can't escalate privileges.
-- `setrlimit` — configurable CPU and memory limits (`--cpu`, `--mem`), max 3 child processes.
 - All FDs above 2 are closed before `execv`.
 
 ### Interactive testing (recommended)
@@ -250,6 +252,22 @@ When sandboxing a process, it needs to be `root` inside its own namespace to set
 The fix: A highly synchronized parent-child handshake using bidirectional pipes. 
 The child unshares and immediately blocks (reading from a pipe). The parent—which is still outside the jail and retains host privileges—intercepts this, writes the UID mapping to the child's `/proc/[pid]/uid_map`, and then writes a byte to the pipe to wake the child up. The child resumes execution with its newly granted authority.
 
+```mermaid
+sequenceDiagram
+    participant Parent as Parent (Host)
+    participant Child as Child (Namespace)
+    
+    Parent->>Child: fork()
+    Child->>Child: unshare(CLONE_NEWUSER)
+    Child->>Parent: Write "A" (Sync byte via pipe)
+    Child->>Child: Block on read() waiting for Parent
+    Parent->>Parent: Read "A" (Child is ready)
+    Parent->>Child: Write "0 <uid> 1" to /proc/[pid]/uid_map
+    Parent->>Child: Write "0 <gid> 1" to /proc/[pid]/gid_map
+    Parent->>Child: Write "A" (Wake up byte)
+    Child->>Child: Unblock, resume as mapped Root
+```
+
 ### The `CLONE_NEWPID` Trap
 
 When isolating a process's PID, you might assume calling `unshare(CLONE_NEWPID)` teleports the process into a new PID namespace. 
@@ -260,3 +278,14 @@ The fix: The "Midwife" pattern (a strict double-fork).
 1. The shell forks Child 1 (The Midwife).
 2. The Midwife calls `unshare(CLONE_NEWPID)` and immediately forks Child 2.
 3. Child 2 is born directly inside the new namespace and is granted **PID 1**. It acts as the `init` process for the sandbox, capable of reaping orphans and ensuring the kernel cleanly destroys the entire namespace when the payload exits.
+
+```mermaid
+graph TD
+    A[Shell Parent] -->|1. fork| B(Child 1: Midwife)
+    B -->|2. unshare CLONE_NEWPID| B
+    B -->|3. fork| C{Child 2: Payload}
+    B -.->|Wait & Exit| B
+    A -->|Wait for Midwife| A
+    C -->|Granted PID 1 in Namespace| D(chroot, execv)
+    C -->|Reaps own orphans| C
+```
