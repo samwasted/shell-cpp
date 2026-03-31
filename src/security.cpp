@@ -141,14 +141,7 @@ bool setup_user_namespace_mapping(pid_t child_pid) {
     return true;
 }
 
-bool setup_restricted_root(const std::string& exec_path) {
-    char template_path[] = "/tmp/myshell-jail-XXXXXX";
-    char* jail_root = mkdtemp(template_path);
-    if (!jail_root) {
-        perror("DEBUG: mkdtemp failed");
-        return false;
-    }
-
+bool setup_restricted_root(const std::string& exec_path, const std::string& jail_root) {
     // make the jail root a private mount point (required for chroot)
     if (mount(nullptr, "/", nullptr, MS_REC | MS_PRIVATE, nullptr) < 0) {
         perror("DEBUG: mount MS_PRIVATE failed");
@@ -158,7 +151,7 @@ bool setup_restricted_root(const std::string& exec_path) {
     // mount essentials (UsrMerge)
     const char* base_mounts[] = {"/usr", "/etc", "/var"};
     for (const char* p : base_mounts) {
-        std::string dst = std::string(jail_root) + p;
+        std::string dst = jail_root + p;
         if (!bind_mount(p, dst, true)) {
             std::cerr << "DEBUG: bind_mount failed for " << p << std::endl;
             return false;
@@ -166,13 +159,13 @@ bool setup_restricted_root(const std::string& exec_path) {
     }
 
     // recreate Fedora symlinks
-    symlink("usr/bin", (std::string(jail_root) + "/bin").c_str());
-    symlink("usr/sbin", (std::string(jail_root) + "/sbin").c_str());
-    symlink("usr/lib", (std::string(jail_root) + "/lib").c_str());
-    symlink("usr/lib64", (std::string(jail_root) + "/lib64").c_str());
+    symlink("usr/bin", (jail_root + "/bin").c_str());
+    symlink("usr/sbin", (jail_root + "/sbin").c_str());
+    symlink("usr/lib", (jail_root + "/lib").c_str());
+    symlink("usr/lib64", (jail_root + "/lib64").c_str());
 
-    // setup Workspace — copy the binary instead of bind mounting CWD
-    std::string workspace_path = std::string(jail_root) + "/workspace";
+    // setup Workspace - copy the binary instead of bind mounting CWD
+    std::string workspace_path = jail_root + "/workspace";
     std::error_code ec;
     fs::create_directories(workspace_path, ec);
 
@@ -194,7 +187,7 @@ bool setup_restricted_root(const std::string& exec_path) {
     }
 
     // mount /proc
-    std::string proc_dst = std::string(jail_root) + "/proc";
+    std::string proc_dst = jail_root + "/proc";
     ensure_dir(proc_dst);
     if (mount("proc", proc_dst.c_str(), "proc", 0, nullptr) < 0) {
         perror("DEBUG: mount proc failed");
@@ -202,7 +195,7 @@ bool setup_restricted_root(const std::string& exec_path) {
     }
 
     // enter the Jail
-    if (chroot(jail_root) < 0) {
+    if (chroot(jail_root.c_str()) < 0) {
         perror("DEBUG: chroot failed");
         return false;
     }
@@ -228,14 +221,14 @@ bool setup_cgroup(pid_t child_pid, const JailOptions& options) {
     }
 
     // apply Limits (e.g., Memory)
-    // here we limit physical RAM (RSS), allowing shared virtual memory to map fine!
+    // we limiting physical RAM (RSS), allowing shared virtual memory to map fine
     std::string mem_limit = std::to_string(options.memory_limit_bytes);
     if (!write_text_file(cg_path + "/memory.max", mem_limit)) {
         std::cerr << "ERROR: Could not write to " << cg_path << "/memory.max\n";
         return false;
     }
 
-    // 4. Trap the child process in the cgroup
+    // trap the child process in the cgroup
     if (!write_text_file(cg_path + "/cgroup.procs", std::to_string(child_pid))) {
         std::cerr << "ERROR: Could not write to " << cg_path << "/cgroup.procs\n";
         return false;
@@ -244,11 +237,19 @@ bool setup_cgroup(pid_t child_pid, const JailOptions& options) {
     return true;
 }
 
-} // namespace
+} 
 
 int enter_jail_environment(const std::string& exec_path,
                            const JailOptions& options,
                            std::string& jailed_exec_path) {
+    char template_path[] = "/tmp/myshell-jail-XXXXXX";
+    char* jail_root_tmp = mkdtemp(template_path);
+    if (!jail_root_tmp) {
+        perror("DEBUG: mkdtemp failed");
+        return -1;
+    }
+    std::string jail_root(jail_root_tmp);
+
     int p2c[2]; // parent to child sync
     int c2p[2]; // child to parent sync
     if (pipe(p2c) < 0 || pipe(c2p) < 0) {
@@ -260,16 +261,16 @@ int enter_jail_environment(const std::string& exec_path,
         return -1;
     }
 
-    if (child_pid > 0) { // Parent process
+    if (child_pid > 0) { // parent process
         close(p2c[0]);
         close(c2p[1]);
 
         char c;
-        if (read(c2p[0], &c, 1) != 1) { // Wait for child to unshare
+        if (read(c2p[0], &c, 1) != 1) { // wait for child to unshare
             _exit(1);
         }
 
-        // Put the child in the cgroup before mapping UID
+        // put the child in the cgroup before mapping UID
         if (!setup_cgroup(child_pid, options)) {
             perror("ERROR: setup_cgroup failed");
             _exit(1);
@@ -280,7 +281,7 @@ int enter_jail_environment(const std::string& exec_path,
             _exit(1);
         }
 
-        if (write(p2c[1], "A", 1) != 1) { // Wake up child
+        if (write(p2c[1], "A", 1) != 1) { // wake up child
             perror("ERROR: Failed to wake up child");
             _exit(1);
         }
@@ -298,7 +299,8 @@ int enter_jail_environment(const std::string& exec_path,
         fs::remove_all("/sys/fs/cgroup/myshell-" + std::to_string(child_pid), ec);
 
         // clean up the jail tmpdir
-        // fs::remove_all(jail_root.c_str(), ec);
+        fs::remove_all(jail_root, ec);
+
         if (WIFEXITED(status)) {
             _exit(WEXITSTATUS(status));
         }
@@ -311,7 +313,7 @@ int enter_jail_environment(const std::string& exec_path,
         _exit(1);
     }
 
-    // Child process
+    // child process
     close(p2c[1]);
     close(c2p[0]);
 
@@ -325,13 +327,13 @@ int enter_jail_environment(const std::string& exec_path,
         _exit(1);
     }
 
-    // Tell parent we have unshared
+    // tell parent we have unshared
     if (write(c2p[1], "A", 1) != 1) {
         std::cerr << "DEBUG: write to parent failed!" << std::endl;
         _exit(1);
     }
 
-    // Wait for parent to set up UID/GID map
+    // wait for parent to set up UID/GID map
     char c;
     if (read(p2c[0], &c, 1) != 1) {
         std::cerr << "DEBUG: read from parent failed!" << std::endl;
@@ -341,7 +343,7 @@ int enter_jail_environment(const std::string& exec_path,
     close(c2p[1]);
     close(p2c[0]);
 
-    // Now we must fork again to become PID 1 in the new PID namespace
+    // now wee must fork again to become PID 1 in the new PID namespace
     pid_t grandchild_pid = fork();
     if (grandchild_pid < 0) {
         std::cerr << "DEBUG: second fork failed!" << std::endl;
@@ -365,13 +367,14 @@ int enter_jail_environment(const std::string& exec_path,
         _exit(1);
     }
 
-    // Grandchild continues as PID 1 in the new pid namespace.
-    if (!setup_restricted_root(exec_path)) {
+    // grandchild continues as PID 1 in the new pid namespace.
+    std::string src_cwd = fs::current_path().string(); // captured before chroot
+
+    if (!setup_restricted_root(exec_path, jail_root)) {
         std::cerr << "DEBUG: setup_restricted_root failed!" << std::endl;
         _exit(1);
     }
 
-    std::string src_cwd = fs::current_path().string(); // captured before chroot
     if (exec_path.rfind(src_cwd, 0) == 0) {
         jailed_exec_path = "/workspace" + exec_path.substr(src_cwd.size());
     } else {
@@ -394,7 +397,7 @@ void apply_jail_policy(const JailOptions& options) {
 
     struct rlimit rl;
 
-    // CPU limit: configurable with small buffer for teardown.
+    // CPU limit: configurable with small buffer for teardown
     rl.rlim_cur = options.cpu_limit_seconds;
     rl.rlim_max = options.cpu_limit_seconds + 3;
     setrlimit(RLIMIT_CPU, &rl);
@@ -404,7 +407,7 @@ void apply_jail_policy(const JailOptions& options) {
     rl.rlim_max = 4;
     setrlimit(RLIMIT_NPROC, &rl);
 
-    // Setup an aggressive signal handler specifically to log SECCOMP traps
+    // setup an aggressive signal handler specifically to log SECCOMP traps
     struct sigaction sa;
     std::memset(&sa, 0, sizeof(sa));
     sa.sa_flags = SA_SIGINFO;
