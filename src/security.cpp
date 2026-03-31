@@ -127,7 +127,7 @@ bool setup_user_namespace_mapping(pid_t child_pid) {
     std::string gid_map_path = "/proc/" + std::to_string(child_pid) + "/gid_map";
 
     if (!write_text_file(setgroups_path, "deny")) {
-        // Some kernels may not allow writing setgroups; continue to uid/gid maps.
+        // some kernels may not allow writing setgroups, continue to uid/gid maps
     }
     uid_t uid = getuid();
     gid_t gid = getgid();
@@ -149,13 +149,13 @@ bool setup_restricted_root(const std::string& exec_path) {
         return false;
     }
 
-    // 1. Make the jail root a private mount point (required for chroot)
+    // make the jail root a private mount point (required for chroot)
     if (mount(nullptr, "/", nullptr, MS_REC | MS_PRIVATE, nullptr) < 0) {
         perror("DEBUG: mount MS_PRIVATE failed");
         return false;
     }
 
-    // 2. Mount essentials (UsrMerge)
+    // mount essentials (UsrMerge)
     const char* base_mounts[] = {"/usr", "/etc", "/var"};
     for (const char* p : base_mounts) {
         std::string dst = std::string(jail_root) + p;
@@ -165,26 +165,35 @@ bool setup_restricted_root(const std::string& exec_path) {
         }
     }
 
-    // 3. Recreate Fedora symlinks
+    // recreate Fedora symlinks
     symlink("usr/bin", (std::string(jail_root) + "/bin").c_str());
     symlink("usr/sbin", (std::string(jail_root) + "/sbin").c_str());
     symlink("usr/lib", (std::string(jail_root) + "/lib").c_str());
     symlink("usr/lib64", (std::string(jail_root) + "/lib64").c_str());
 
-    // 4. Setup Workspace (The simple bind mount)
-    std::string src_cwd = fs::current_path().string();
+    // setup Workspace — copy the binary instead of bind mounting CWD
     std::string workspace_path = std::string(jail_root) + "/workspace";
-    
     std::error_code ec;
     fs::create_directories(workspace_path, ec);
 
-    // FIX: Using MS_BIND without MS_REC to avoid Btrfs subvolume errors
-    if (mount(src_cwd.c_str(), workspace_path.c_str(), nullptr, MS_BIND, nullptr) < 0) {
-        std::cerr << "DEBUG: mount bind failed for /workspace: " << strerror(errno) << " (Path: " << src_cwd << ")" << std::endl;
+    // copy just the executable into /workspace
+    fs::path src_exec(exec_path);
+    std::string dst_exec = workspace_path + "/" + src_exec.filename().string();
+
+    try {
+        fs::copy_file(src_exec, dst_exec, fs::copy_options::overwrite_existing, ec);
+        if (ec) {
+            std::cerr << "DEBUG: copy_file failed: " << ec.message() << std::endl;
+            return false;
+        }
+        // Make it executable
+        chmod(dst_exec.c_str(), 0755);
+    } catch (...) {
+        std::cerr << "DEBUG: exception during copy" << std::endl;
         return false;
     }
 
-    // 5. Mount /proc
+    // mount /proc
     std::string proc_dst = std::string(jail_root) + "/proc";
     ensure_dir(proc_dst);
     if (mount("proc", proc_dst.c_str(), "proc", 0, nullptr) < 0) {
@@ -192,7 +201,7 @@ bool setup_restricted_root(const std::string& exec_path) {
         return false;
     }
 
-    // 6. Enter the Jail
+    // enter the Jail
     if (chroot(jail_root) < 0) {
         perror("DEBUG: chroot failed");
         return false;
@@ -207,10 +216,10 @@ bool setup_restricted_root(const std::string& exec_path) {
 }
 
 bool setup_cgroup(pid_t child_pid, const JailOptions& options) {
-    // 1. Define a unique path for this specific jail instance
+    // define a unique path for this specific jail instance
     std::string cg_path = "/sys/fs/cgroup/myshell-" + std::to_string(child_pid);
     
-    // 2. Create the directory (Kernel will populate it)
+    // create the directory (Kernel will populate it)
     std::error_code ec;
     fs::create_directories(cg_path, ec);
     if (ec) {
@@ -218,8 +227,8 @@ bool setup_cgroup(pid_t child_pid, const JailOptions& options) {
         return false;
     }
 
-    // 3. Apply Limits (e.g., Memory)
-    // Here we limit physical RAM (RSS), allowing shared virtual memory to map fine!
+    // apply Limits (e.g., Memory)
+    // here we limit physical RAM (RSS), allowing shared virtual memory to map fine!
     std::string mem_limit = std::to_string(options.memory_limit_bytes);
     if (!write_text_file(cg_path + "/memory.max", mem_limit)) {
         std::cerr << "ERROR: Could not write to " << cg_path << "/memory.max\n";
@@ -284,10 +293,12 @@ int enter_jail_environment(const std::string& exec_path,
             _exit(1);
         }
 
-        // Clean up the cgroup after the child dies
+        // clean up the cgroup after the child dies
         std::error_code ec;
         fs::remove_all("/sys/fs/cgroup/myshell-" + std::to_string(child_pid), ec);
 
+        // clean up the jail tmpdir
+        // fs::remove_all(jail_root.c_str(), ec);
         if (WIFEXITED(status)) {
             _exit(WEXITSTATUS(status));
         }
@@ -360,7 +371,12 @@ int enter_jail_environment(const std::string& exec_path,
         _exit(1);
     }
 
-    jailed_exec_path = exec_path;
+    std::string src_cwd = fs::current_path().string(); // captured before chroot
+    if (exec_path.rfind(src_cwd, 0) == 0) {
+        jailed_exec_path = "/workspace" + exec_path.substr(src_cwd.size());
+    } else {
+        jailed_exec_path = "/workspace/" + fs::path(exec_path).filename().string();
+    }
     return 0;
 }
 
