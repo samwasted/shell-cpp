@@ -123,7 +123,27 @@ graph BT
 
     end
 
-``` 
+```
+
+## Filesystem Isolation
+
+The sandbox isolates the filesystem using **mount namespaces, bind mounts, and `chroot`**, without overlay or union filesystems.
+
+### Implemented
+- Mount namespace isolation (`CLONE_NEWNS`)
+- Private mounts (`MS_PRIVATE`)
+- Ephemeral root (`/tmp/myshell-jail-*`)
+- Selective bind mounts for required paths
+- `chroot` confinement
+
+### Not implemented
+- No overlay/union filesystem
+- No copy-on-write layers
+- No container image abstraction
+
+### Summary
+Provides **practical, kernel-enforced filesystem isolation** with minimal complexity and attack surface.
+
 ### Interactive testing (recommended)
 
 Run these directly inside `sudo ./jailsh`:
