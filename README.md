@@ -1,21 +1,31 @@
 # myshell
 
-A Unix shell written in C++17 from scratch. Handles lexing, parsing (into an AST), pipelines, I/O redirection, background jobs, command history via readline, and has a `jail` mode that sandboxes untrusted programs using seccomp + Linux namespaces.
+A Unix shell in C++17 with an AST-based execution engine and a built-in, kernel-enforced sandbox for safely running untrusted programs.
 
-Built this to understand how shells actually work under the hood — signal handling, process groups, file descriptor plumbing, all of it.
+It combines traditional shell functionality (pipelines, job control, redirection) with modern isolation primitives (seccomp-BPF, Linux namespaces, and cgroups), effectively acting as a lightweight container runtime embedded inside a shell.
 
-## What it does
+## Features
 
-- Readline-based REPL with history (arrow keys, `history N`, etc.)
+- Readline-based REPL with history
 - Builtins: `cd`, `echo`, `pwd`, `exit`, `type`, `history`, `jobs`
-- External commands resolved through `$PATH`, absolute/relative paths, tilde expansion
-- Tokenizer + AST parser with proper single/double quote handling and backslash escapes
+- AST-based parsing with correct quoting and escape handling
 - Multi-stage pipelines (`cmd1 | cmd2 | cmd3`)
-- Output/error redirection: `>`, `>>`, `1>`, `1>>`, `2>`, `2>>`
-- Sequential commands with `;`
-- Background execution with `&`, plus async `SIGCHLD` reaping
-- `jail` prefix with option parsing (`--cpu`, `--mem`, `--no-net`, `--help`) to run commands in a seccomp sandbox
-- Correct SIGPIPE semantics for pipelines (`yes | head -n 1` exits cleanly)
+- I/O redirection: `>`, `>>`, `2>`, `2>>`, `1>`, `1>>`
+- Background execution (`&`) with async `SIGCHLD` reaping
+- PATH resolution and tilde expansion
+- Integrated `jail` sandbox with CPU/memory/network controls
+- Correct Unix semantics (for example, `SIGPIPE` handling)
+
+## Motivation
+
+Modern shells assume trusted execution. This project explores what happens when that assumption is removed.
+
+The goal was to:
+- understand process lifecycle and signal handling deeply
+- build a correct execution engine under asynchronous conditions
+- design a secure execution boundary using kernel primitives
+
+The result is a shell that can safely execute untrusted binaries using a container-like sandbox.
 
 ## Structure
 
@@ -44,7 +54,9 @@ make
 ./myshell
 ```
 
-## Linux Namespaces & Capabilities Sandbox (`jail`)
+## Sandbox (`jail`)
+
+A multi-layered, kernel-enforced sandbox that isolates processes using namespaces, seccomp, capabilities, and cgroups.
 
 Prefix any command with `jail` to lock it down:
 
@@ -63,12 +75,13 @@ What happens under the hood:
 - **Ephemeral Sandbox Workspace**: `myshell` uses `mkdtemp` to construct an entirely new `/tmp/myshell-jail-XXXXXX` environment every single run. It sets up private recursive mounts (`MS_PRIVATE`) and recreates modern UsrMerge system root linkages (symlinking `/bin` to `/usr/bin`, etc.) so that binaries work out-of-the-box on systems like Fedora and modern Debian. Handles Btrfs-specific subvolume boundary issues by using precise `MS_BIND` flag sequencing rather than generic recursive mounts.
 - **Hard Copy Sandbox**: Instead of opening up a risky bind-mount portal into your actual working directory, `myshell` securely transplants the target executable into an isolated `/workspace` directory via `std::filesystem::copy_file`. The binary runs in total isolation from your host files.
 - **Cgroups v2 Limits**: Instead of solely relying on easily-bypassed `setrlimit` boundaries, physical memory and resources are now constrained using genuine Linux Control Groups (`/sys/fs/cgroup/myshell-<pid>`).
-- **Zero Footprint Exit**: A custom bi-directional IPC pipe cleanly syncs initialization between the parent and forked child/grandchild (preventing race conditions during ID mapping). The moment the untrusted process exits, the parent catches `waitpid` and immediately shreds the entire temporary filesystem workspace and kernel `cgroups` block, leaving absolutely zero detritus behind.
+- **Zero Footprint Exit**: A custom bi-directional IPC pipe cleanly syncs initialization between the parent and forked child/grandchild (preventing race conditions during ID mapping). The moment the untrusted process exits, the parent catches `waitpid` and immediately cleans up the temporary filesystem workspace and kernel `cgroups` block.
 - **Capabilities Sandbox**: Linux capabilities are fully locked down (`capset` + bounding-set drop via `drop_all_capabilities()`), removing privileged kernel capabilities before exec.
-- **seccomp-bpf**: A massive, highly specific allowlist filters system calls via `apply_jail_policy()`. Everything else terminates the process immediately (`SCMP_ACT_KILL`). `openat` is only allowed read-only. `write` is restricted to fd 1 and 2.
+- **seccomp-bpf**: A strict syscall allowlist filters system calls via `apply_jail_policy()`. Everything else terminates the process immediately (`SCMP_ACT_KILL`). `openat` is only allowed read-only. `write` is restricted to fd 1 and 2.
 - `prctl(PR_SET_NO_NEW_PRIVS)` — can't escalate privileges.
 - All FDs above 2 are closed before `execv`.
- ### Layers of Isolation (The Vault)
+
+### Layers of Isolation (The Vault)
 
 The jail is structured like a vault. The payload is surrounded by concentric filters, each enforced by the Linux kernel.
 
@@ -152,6 +165,21 @@ $ jail ./test_security fork    # fork bomb capped
 $ jail ./test_security mem     # allocation fails at limit
 $ jail ./test_security cpu     # killed after ~2s
 ```
+
+## Key Challenges Solved
+
+- Fixed a fork/SIGCHLD race that caused ghost jobs
+- Implemented correct PID namespace isolation via double-fork (PID 1 init model)
+- Solved UID/GID mapping dependency in `CLONE_NEWUSER` using an IPC handshake
+- Designed an async-signal-safe job tracking and reap path
+
+## Validation
+
+- Handles fork bombs safely via cgroup constraints
+- Avoids zombie leakage under high process churn
+- Preserves correct pipeline termination (`yes | head -n 1`)
+- Enforces memory and CPU limits via cgroups
+- Verifies network isolation with `--no-net`
 
 ## Technical deep-dive
 
