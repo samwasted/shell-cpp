@@ -141,8 +141,6 @@ The sandbox isolates the filesystem using **mount namespaces, bind mounts, and `
 - No copy-on-write layers
 - No container image abstraction
 
-### Summary
-Provides **practical, kernel-enforced filesystem isolation** with minimal complexity and attack surface.
 
 ### Interactive testing (recommended)
 
