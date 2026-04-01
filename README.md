@@ -136,11 +136,6 @@ The sandbox isolates the filesystem using **mount namespaces, bind mounts, and `
 - Selective bind mounts for required paths
 - `chroot` confinement
 
-### Not implemented
-- No overlay/union filesystem
-- No copy-on-write layers
-- No container image abstraction
-
 
 ### Interactive testing (recommended)
 
