@@ -11,7 +11,7 @@ INC_DIR = include
 # files
 SOURCES = $(wildcard $(SRC_DIR)/*.cpp)
 OBJECTS = $(SOURCES:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
-TARGET = myshell
+TARGET = jailsh
 
 # default target
 all: $(TARGET)
