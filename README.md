@@ -347,22 +347,28 @@ graph TD
 
 If you are trying to understand how `myshell` interacts with the kernel, or why a specific sandbox constraint is failing, `strace` is your best friend.
 
-Run the shell under `strace` to trace all system calls:
+Because the `jail` mode requires root privileges to configure namespaces, directly running `strace sudo ./myshell` often clutters your output with `sudo` wrapper syscalls, or causes `ptrace` permission issues when privileges drop. 
 
+The cleanest way to trace a jail execution is the two-terminal hack:
+
+**Terminal 1 (The Shell):**
+Start the shell as root and find its PID.
 ```bash
-strace -f ./myshell
+$ sudo ./myshell
+$ echo $$
+[PID appears here, e.g., 12345]
 ```
 
-The `-f` flag is crucial because it tells `strace` to follow child processes (since the shell uses `fork()` heavily for command execution and pipelines).
-
-To trace a specific command inside the jail and see exactly which syscalls are being blocked by seccomp:
-
+**Terminal 2 (The Tracer):**
+Attach `strace` to that PID as root. The `-f` flag is crucial so it follows all the child processes and `fork()`s.
 ```bash
-strace -f ./myshell -c "jail ./the_hi"
+$ sudo strace -f -p 12345
+```
+*(You can also add filters like `-e trace=clone,unshare,execve,prctl,seccomp` to reduce noise).*
+
+Now, go back to **Terminal 1** and run your jailed command:
+```bash
+$ jail ./sketchy_binary
 ```
 
-You can also filter for specific syscalls. For example, to only see process creation and isolation calls:
-
-```bash
-strace -f -e trace=clone,unshare,execve,prctl,seccomp ./myshell
-```
+All the raw kernel interactions, namespace isolations, and seccomp kills will cleanly stream into Terminal 2 without visually corrupting your `myshell` REPL!
