@@ -282,7 +282,7 @@ tcsetattr(STDIN_FILENO, TCSADRAIN, &shell_tmodes);
 
 ---
 
-### The `CLONE_NEWUSER` circular dependency (IPC Handshake)
+### The `CLONE_NEWUSER` Circular Dependency (IPC Handshake)
 
 When sandboxing a process, it needs to be `root` inside its own namespace to set up `chroot` and mounts. The scenario:
 1. Child calls `unshare(CLONE_NEWUSER)` to isolate itself.
