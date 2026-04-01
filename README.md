@@ -282,9 +282,9 @@ The fix: The "Midwife" pattern (a strict double-fork).
 ```mermaid
 graph TD
     A[Shell Parent] -->|1. fork| B(Child 1: Midwife)
-    B -->|2. unshare CLONE_NEWPID| B
-    B -->|3. fork| C{Child 2: Payload}
-    B -.->|Wait & Exit| B
+    B -->|2. unshare CLONE_NEWPID| B_UNSHARED(Child 1: Ready to fork)
+    B_UNSHARED -->|3. fork| C{Child 2: Payload}
+    B_UNSHARED -.->|Wait & Exit| B_UNSHARED
     A -->|Wait for Midwife| A
     C -->|Granted PID 1 in Namespace| D(chroot, execv)
     C -->|Reaps own orphans| C
