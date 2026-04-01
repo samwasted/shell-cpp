@@ -337,7 +337,7 @@ graph TD
 * **Accuracy**: Virtual limits penalize processes for shared libraries. Cgroups track the actual physical pages consumed by the sandbox.
 * **Kernel Integration**: When a process reaches its limit, the kernel triggers a targeted OOM-kill within that specific cgroup. This prevents the process from exhausting host resources without impacting the parent shell.
 
-This shift was made after ./the_hi was not working even after allocating 128M, because libs required approx. 233M of virtual mem reservation.
+This shift was made after ./the_hi was not working even after allocating 128M, because libs required approx. 233M of virtual mem reservation before the actual execution.
 
 | Metric | RLIMIT_AS | memory.max |
 | :--- | :--- | :--- |
