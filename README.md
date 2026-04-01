@@ -342,3 +342,27 @@ graph TD
 | **Monitors** | Virtual Address Space | Physical RAM (RSS) |
 | **Constraint** | Address space reserved | Hardware consumed |
 | **Outcome** | malloc returns NULL | Kernel OOM-kill |
+
+## Debugging with `strace`
+
+If you are trying to understand how `myshell` interacts with the kernel, or why a specific sandbox constraint is failing, `strace` is your best friend.
+
+Run the shell under `strace` to trace all system calls:
+
+```bash
+strace -f ./myshell
+```
+
+The `-f` flag is crucial because it tells `strace` to follow child processes (since the shell uses `fork()` heavily for command execution and pipelines).
+
+To trace a specific command inside the jail and see exactly which syscalls are being blocked by seccomp:
+
+```bash
+strace -f ./myshell -c "jail ./the_hi"
+```
+
+You can also filter for specific syscalls. For example, to only see process creation and isolation calls:
+
+```bash
+strace -f -e trace=clone,unshare,execve,prctl,seccomp ./myshell
+```
