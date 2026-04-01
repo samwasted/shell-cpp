@@ -347,7 +347,7 @@ graph TD
 
 If you are trying to understand how `myshell` interacts with the kernel, or why a specific sandbox constraint is failing, `strace` is your best friend.
 
-Because the `jail` mode requires root privileges to configure namespaces, directly running `strace sudo ./myshell` often clutters your output with `sudo` wrapper syscalls, or causes `ptrace` permission issues when privileges drop. 
+Because the `jail` mode requires root privileges (primarily to configure kernel `cgroups` and Linux namespaces), directly running `strace sudo ./myshell` often clutters your output with `sudo` wrapper syscalls, or causes `ptrace` permission issues when privileges drop. 
 
 The cleanest way to trace a jail execution is the two-terminal hack:
 
@@ -364,7 +364,11 @@ $ pgrep myshell
 12345
 $ sudo strace -f -p 12345
 ```
-*(You can also add filters like `-e trace=clone,unshare,execve,prctl,seccomp` to reduce noise).*
+
+*(Optional: Add filters to reduce noise and only observe sandboxing mechanics)*:
+```bash
+$ sudo strace -f -e trace=clone,unshare,execve,prctl,seccomp -p 12345
+```
 
 Now, go back to **Terminal 1** and run your jailed command:
 ```bash
