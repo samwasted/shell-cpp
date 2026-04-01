@@ -53,7 +53,7 @@ Needs g++ (C++17), libreadline-dev, and libseccomp-dev.
 ```bash
 sudo apt install build-essential libreadline-dev libseccomp-dev
 make
-./myshell
+./jailsh
 ```
 
 ## Sandbox (`jail`)
@@ -126,7 +126,7 @@ graph BT
 ``` 
 ### Interactive testing (recommended)
 
-Run these directly inside `./myshell`:
+Run these directly inside `./jailsh`:
 
 ```
 $ jail --help
@@ -154,14 +154,14 @@ $ yes | head -n 1
 If you want repeatable non-interactive tests, piping commands is fine too:
 
 ```bash
-printf "jail --help\njail --cpu 5 --mem 256M echo hello\nexit\n" | ./myshell
+printf "jail --help\njail --cpu 5 --mem 256M echo hello\nexit\n" | ./jailsh
 ```
 
 There's a `test_security.cpp` you can compile separately to verify each constraint:
 
 ```bash
 g++ -std=c++17 test_security.cpp -o test_security
-./myshell
+./jailsh
 $ jail ./test_security net     # network blocked
 $ jail ./test_security fork    # fork bomb capped
 $ jail ./test_security mem     # allocation fails at limit
@@ -379,14 +379,14 @@ This shift was made after ./the_hi was not working even after allocating 128M, b
 
 If you are trying to understand how `myshell` interacts with the kernel, or why a specific sandbox constraint is failing, `strace` is your best friend.
 
-Because the `jail` mode requires root privileges (primarily to configure kernel `cgroups` and Linux namespaces), directly running `strace sudo ./myshell` often clutters your output with `sudo` wrapper syscalls, or causes `ptrace` permission issues when privileges drop. 
+Because the `jail` mode requires root privileges (primarily to configure kernel `cgroups` and Linux namespaces), directly running `strace sudo ./jailsh` often clutters your output with `sudo` wrapper syscalls, or causes `ptrace` permission issues when privileges drop. 
 
 The cleanest way to trace a jail execution is the two-terminal hack:
 
 **Terminal 1 (The Shell):**
 Start the shell as root:
 ```bash
-$ sudo ./myshell
+$ sudo ./jailsh
 ```
 
 **Terminal 2 (The Tracer):**
