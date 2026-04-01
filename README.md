@@ -1,5 +1,5 @@
-# Sandbox Shell
-> A Unix shell + lightweight container runtime for safe execution of untrusted code.
+# jailsh
+> A Unix shell that doubles as a container runtime using raw Linux kernel primitives.
 
 
 A Unix shell in C++17 with an AST-based execution engine and a built-in, kernel-enforced sandbox for safely running untrusted programs.
