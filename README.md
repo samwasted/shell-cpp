@@ -53,7 +53,7 @@ Needs g++ (C++17), libreadline-dev, and libseccomp-dev.
 ```bash
 sudo apt install build-essential libreadline-dev libseccomp-dev
 make
-./jailsh
+sudo ./jailsh
 ```
 
 ## Sandbox (`jail`)
@@ -126,7 +126,7 @@ graph BT
 ``` 
 ### Interactive testing (recommended)
 
-Run these directly inside `./jailsh`:
+Run these directly inside `sudo ./jailsh`:
 
 ```
 $ jail --help
@@ -154,14 +154,14 @@ $ yes | head -n 1
 If you want repeatable non-interactive tests, piping commands is fine too:
 
 ```bash
-printf "jail --help\njail --cpu 5 --mem 256M echo hello\nexit\n" | ./jailsh
+printf "jail --help\njail --cpu 5 --mem 256M echo hello\nexit\n" | sudo ./jailsh
 ```
 
 There's a `test_security.cpp` you can compile separately to verify each constraint:
 
 ```bash
 g++ -std=c++17 test_security.cpp -o test_security
-./jailsh
+sudo ./jailsh
 $ jail ./test_security net     # network blocked
 $ jail ./test_security fork    # fork bomb capped
 $ jail ./test_security mem     # allocation fails at limit
@@ -377,7 +377,7 @@ This shift was made after ./the_hi was not working even after allocating 128M, b
 
 ## Debugging with `strace`
 
-If you are trying to understand how `myshell` interacts with the kernel, or why a specific sandbox constraint is failing, `strace` is your best friend.
+If you are trying to understand how `jailsh` interacts with the kernel, or why a specific sandbox constraint is failing, `strace` is your best friend.
 
 Because the `jail` mode requires root privileges (primarily to configure kernel `cgroups` and Linux namespaces), directly running `strace sudo ./jailsh` often clutters your output with `sudo` wrapper syscalls, or causes `ptrace` permission issues when privileges drop. 
 
@@ -390,9 +390,9 @@ $ sudo ./jailsh
 ```
 
 **Terminal 2 (The Tracer):**
-Find the PID of `myshell` and attach `strace` to that PID as root. The `-f` flag is crucial so it follows all the child processes and `fork()`s.
+Find the PID of `jailsh` and attach `strace` to that PID as root. The `-f` flag is crucial so it follows all the child processes and `fork()`s.
 ```bash
-$ pgrep myshell
+$ pgrep jailsh
 12345
 $ sudo strace -f -p 12345
 ```
@@ -407,4 +407,4 @@ Now, go back to **Terminal 1** and run your jailed command:
 $ jail ./sketchy_binary
 ```
 
-All the raw kernel interactions, namespace isolations, and seccomp kills will cleanly stream into Terminal 2 without visually corrupting your `myshell` REPL!
+All the raw kernel interactions, namespace isolations, and seccomp kills will cleanly stream into Terminal 2 without visually corrupting your `jailsh` REPL!
