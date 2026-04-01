@@ -74,9 +74,9 @@ $ jail --help
 
 What happens under the hood:
 - **Linux Namespaces**: `unshare(CLONE_NEWUSER | CLONE_NEWNS | CLONE_NEWPID [+ CLONE_NEWNET with --no-net])` — isolates user, mount, PID, and optionally network namespaces. 
-- **Ephemeral Sandbox Workspace**: `myshell` uses `mkdtemp` to construct an entirely new `/tmp/myshell-jail-XXXXXX` environment every single run. It sets up private recursive mounts (`MS_PRIVATE`) and recreates modern UsrMerge system root linkages (symlinking `/bin` to `/usr/bin`, etc.) so that binaries work out-of-the-box on systems like Fedora and modern Debian. Handles Btrfs-specific subvolume boundary issues by using precise `MS_BIND` flag sequencing rather than generic recursive mounts.
-- **Hard Copy Sandbox**: Instead of opening up a risky bind-mount portal into your actual working directory, `myshell` securely transplants the target executable into an isolated `/workspace` directory via `std::filesystem::copy_file`. The binary runs in total isolation from your host files.
-- **Cgroups v2 Limits**: Instead of solely relying on easily-bypassed `setrlimit` boundaries, physical memory and resources are now constrained using genuine Linux Control Groups (`/sys/fs/cgroup/myshell-<pid>`).
+- **Ephemeral Sandbox Workspace**: `jailsh` uses `mkdtemp` to construct an entirely new `/tmp/jailsh-jail-XXXXXX` environment every single run. It sets up private recursive mounts (`MS_PRIVATE`) and recreates modern UsrMerge system root linkages (symlinking `/bin` to `/usr/bin`, etc.) so that binaries work out-of-the-box on systems like Fedora and modern Debian. Handles Btrfs-specific subvolume boundary issues by using precise `MS_BIND` flag sequencing rather than generic recursive mounts.
+- **Hard Copy Sandbox**: Instead of opening up a risky bind-mount portal into your actual working directory, `jailsh` securely transplants the target executable into an isolated `/workspace` directory via `std::filesystem::copy_file`. The binary runs in total isolation from your host files.
+- **Cgroups v2 Limits**: Instead of solely relying on easily-bypassed `setrlimit` boundaries, physical memory and resources are now constrained using genuine Linux Control Groups (`/sys/fs/cgroup/jailsh-<pid>`).
 - **Zero Footprint Exit**: A custom bi-directional IPC pipe cleanly syncs initialization between the parent and forked child/grandchild (preventing race conditions during ID mapping). The moment the untrusted process exits, the parent catches `waitpid` and immediately cleans up the temporary filesystem workspace and kernel `cgroups` block.
 - **Capabilities Sandbox**: Linux capabilities are fully locked down (`capset` + bounding-set drop via `drop_all_capabilities()`), removing privileged kernel capabilities before exec.
 - **seccomp-bpf**: A strict syscall allowlist filters system calls via `apply_jail_policy()`. Everything else terminates the process immediately (`SCMP_ACT_KILL`). `openat` is only allowed read-only. `write` is restricted to fd 1 and 2.
@@ -132,7 +132,7 @@ The sandbox isolates the filesystem using **mount namespaces, bind mounts, and `
 ### Implemented
 - Mount namespace isolation (`CLONE_NEWNS`)
 - Private mounts (`MS_PRIVATE`)
-- Ephemeral root (`/tmp/myshell-jail-*`)
+- Ephemeral root (`/tmp/jailsh-jail-*`)
 - Selective bind mounts for required paths
 - `chroot` confinement
 
@@ -379,7 +379,7 @@ graph TD
 ```
 ### Resource Accounting: Physical vs. Virtual RAM
 
-`myshell` manages Resident Set Size (RSS) using Cgroups v2 (`memory.max`) instead of traditional virtual memory limits (`RLIMIT_AS`).
+`jailsh` manages Resident Set Size (RSS) using Cgroups v2 (`memory.max`) instead of traditional virtual memory limits (`RLIMIT_AS`).
 
 * **Allocator Compatibility**: Modern runtimes (Go, Rust, and C++ with jemalloc) often pre-reserve large virtual address spaces. `RLIMIT_AS` can cause these to crash on startup regardless of actual RAM usage.
 * **Accuracy**: Virtual limits penalize processes for shared libraries. Cgroups track the actual physical pages consumed by the sandbox.

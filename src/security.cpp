@@ -210,7 +210,7 @@ bool setup_restricted_root(const std::string& exec_path, const std::string& jail
 
 bool setup_cgroup(pid_t child_pid, const JailOptions& options) {
     // define a unique path for this specific jail instance
-    std::string cg_path = "/sys/fs/cgroup/myshell-" + std::to_string(child_pid);
+    std::string cg_path = "/sys/fs/cgroup/jailsh-" + std::to_string(child_pid);
     
     // create the directory (Kernel will populate it)
     std::error_code ec;
@@ -242,7 +242,7 @@ bool setup_cgroup(pid_t child_pid, const JailOptions& options) {
 int enter_jail_environment(const std::string& exec_path,
                            const JailOptions& options,
                            std::string& jailed_exec_path) {
-    char template_path[] = "/tmp/myshell-jail-XXXXXX";
+    char template_path[] = "/tmp/jailsh-jail-XXXXXX";
     char* jail_root_tmp = mkdtemp(template_path);
     if (!jail_root_tmp) {
         perror("DEBUG: mkdtemp failed");
@@ -296,7 +296,7 @@ int enter_jail_environment(const std::string& exec_path,
 
         // clean up the cgroup after the child dies
         std::error_code ec;
-        fs::remove_all("/sys/fs/cgroup/myshell-" + std::to_string(child_pid), ec);
+        fs::remove_all("/sys/fs/cgroup/jailsh-" + std::to_string(child_pid), ec);
 
         // clean up the jail tmpdir
         fs::remove_all(jail_root, ec);
