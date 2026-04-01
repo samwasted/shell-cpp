@@ -352,16 +352,16 @@ Because the `jail` mode requires root privileges to configure namespaces, direct
 The cleanest way to trace a jail execution is the two-terminal hack:
 
 **Terminal 1 (The Shell):**
-Start the shell as root and find its PID.
+Start the shell as root:
 ```bash
 $ sudo ./myshell
-$ echo $$
-[PID appears here, e.g., 12345]
 ```
 
 **Terminal 2 (The Tracer):**
-Attach `strace` to that PID as root. The `-f` flag is crucial so it follows all the child processes and `fork()`s.
+Find the PID of `myshell` and attach `strace` to that PID as root. The `-f` flag is crucial so it follows all the child processes and `fork()`s.
 ```bash
+$ pgrep myshell
+12345
 $ sudo strace -f -p 12345
 ```
 *(You can also add filters like `-e trace=clone,unshare,execve,prctl,seccomp` to reduce noise).*
