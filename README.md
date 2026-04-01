@@ -314,7 +314,7 @@ When isolating a process's PID, you might assume calling `unshare(CLONE_NEWPID)`
 
 It doesn't. In Linux, a process can *never* change its own PID. `unshare(CLONE_NEWPID)` only dictates that the process's *future children* will be put into a new namespace. If you just unshare and `execv()` the payload, the untrusted code still runs in the host's PID namespace, completely defeating the sandbox and leaking zombie processes.
 
-The fix: The "Midwife" pattern (a strict double-fork).
+The fix: The "Midwife" pattern (a strict double-fork).  
 1. The shell forks Child 1 (The Midwife).
 2. The Midwife calls `unshare(CLONE_NEWPID)` and immediately forks Child 2.
 3. Child 2 is born directly inside the new namespace and is granted **PID 1**. It acts as the `init` process for the sandbox, capable of reaping orphans and ensuring the kernel cleanly destroys the entire namespace when the payload exits.
