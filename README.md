@@ -68,7 +68,47 @@ What happens under the hood:
 - **seccomp-bpf**: A massive, highly specific allowlist filters system calls via `apply_jail_policy()`. Everything else terminates the process immediately (`SCMP_ACT_KILL`). `openat` is only allowed read-only. `write` is restricted to fd 1 and 2.
 - `prctl(PR_SET_NO_NEW_PRIVS)` — can't escalate privileges.
 - All FDs above 2 are closed before `execv`.
+ ### Layers of Isolation (The Vault)
 
+The jail is structured like a vault. The payload is surrounded by concentric filters, each enforced by the Linux kernel.
+
+```mermaid
+
+graph BT
+
+    subgraph Host_Kernel [Linux Kernel]
+
+        direction BT
+
+        Cgroups[Cgroups v2: RAM/CPU Rations]
+
+        Seccomp[Seccomp-BPF: Syscall Filter]
+
+        Caps[Capabilities: Stripped Privileges]
+
+        NS[Namespaces: Virtual Reality]
+
+        
+
+        subgraph Jail [The Sandbox]
+
+            Payload(Untrusted Process)
+
+        end
+
+        
+
+        Payload --> NS
+
+        NS --> Caps
+
+        Caps --> Seccomp
+
+        Seccomp --> Cgroups
+
+    end
+
+``` 
 ### Interactive testing (recommended)
 
 Run these directly inside `./myshell`:
