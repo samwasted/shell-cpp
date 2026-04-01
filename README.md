@@ -329,3 +329,16 @@ graph TD
     C -->|Granted PID 1 in Namespace| D(chroot, execv)
     C -->|Reaps own orphans| C
 ```
+### Resource Accounting: Physical vs. Virtual RAM
+
+`myshell` manages Resident Set Size (RSS) using Cgroups v2 (`memory.max`) instead of traditional virtual memory limits (`RLIMIT_AS`).
+
+* **Allocator Compatibility**: Modern runtimes (Go, Rust, and C++ with jemalloc) often pre-reserve large virtual address spaces. `RLIMIT_AS` can cause these to crash on startup regardless of actual RAM usage.
+* **Accuracy**: Virtual limits penalize processes for shared libraries. Cgroups track the actual physical pages consumed by the sandbox.
+* **Kernel Integration**: When a process reaches its limit, the kernel triggers a targeted OOM-kill within that specific cgroup. This prevents the process from exhausting host resources without impacting the parent shell.
+
+| Metric | RLIMIT_AS | memory.max |
+| :--- | :--- | :--- |
+| **Monitors** | Virtual Address Space | Physical RAM (RSS) |
+| **Constraint** | Address space reserved | Hardware consumed |
+| **Outcome** | malloc returns NULL | Kernel OOM-kill |
