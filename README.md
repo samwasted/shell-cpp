@@ -233,7 +233,7 @@ void sigchld_handler(int sig) {
 
 Background job completion ("Done") is printed at the top of the REPL loop, not inside the signal handler. This is intentional: if you print from the handler, you'll corrupt whatever the user is currently typing into readline. The trade-off is that you only see the notification after hitting Enter.
 
-The "real" fix would be to call `rl_redisplay()` from the handler to refresh the prompt, but that introduces a lot of complexity around making readline cooperate with async output. Not worth it for this project.
+The "real" fix would be to call `rl_redisplay()` from the handler to refresh the prompt, but that introduces a lot of complexity around making readline cooperate with async output. Since bash also uses deferred job notifications, I decided to stick with the same.
 
 ### SIGPIPE behavior in pipelines
 
