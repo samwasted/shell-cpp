@@ -91,37 +91,35 @@ The jail is structured like a vault. The payload is surrounded by concentric fil
 
 graph BT
 
-    subgraph Host_Kernel [Linux Kernel]
+    subgraph Host_Kernel [Linux Kernel]
+        direction BT
+        
+        Cgroups[Cgroups v2: RAM/CPU Rations]:::cgroupNode
+        Seccomp[Seccomp-BPF: Syscall Filter]:::seccompNode
+        Caps[Capabilities: Stripped Privileges]:::capsNode
+        NS[Namespaces: Virtual Reality]:::nsNode
+        
+        subgraph Jail [The Sandbox]
+            direction BT
+            Payload(Untrusted Process):::payloadNode
+        end
+        
+        Payload --> NS
+        NS --> Caps
+        Caps --> Seccomp
+        Seccomp --> Cgroups
+    end
 
-        direction BT
-
-        Cgroups[Cgroups v2: RAM/CPU Rations]
-
-        Seccomp[Seccomp-BPF: Syscall Filter]
-
-        Caps[Capabilities: Stripped Privileges]
-
-        NS[Namespaces: Virtual Reality]
-
-        
-
-        subgraph Jail [The Sandbox]
-
-            Payload(Untrusted Process)
-
-        end
-
-        
-
-        Payload --> NS
-
-        NS --> Caps
-
-        Caps --> Seccomp
-
-        Seccomp --> Cgroups
-
-    end
+    %% Define colors and styles
+    classDef payloadNode fill:#ffcccc,stroke:#ff0000,stroke-width:2px,rx:10,ry:10,color:#990000;
+    classDef nsNode fill:#e6f3ff,stroke:#0073e6,stroke-width:2px,color:#004d99;
+    classDef capsNode fill:#e6ffe6,stroke:#00cc00,stroke-width:2px,color:#006600;
+    classDef seccompNode fill:#fff2e6,stroke:#ff9933,stroke-width:2px,color:#994d00;
+    classDef cgroupNode fill:#f2e6ff,stroke:#8000ff,stroke-width:2px,color:#4d0099;
+    
+    %% Style the subgraphs
+    style Host_Kernel fill:#f9f9f9,stroke:#666,stroke-width:1px,color:#333;
+    style Jail fill:#fff,stroke:#ff6666,stroke-width:2px,stroke-dasharray: 5 5,color:#ff3333;
 
 ```
 
