@@ -86,7 +86,7 @@ What happens under the hood:
 ### Layers of Isolation (The Vault)
 
 The jail is structured like a vault. The payload is surrounded by concentric filters, each enforced by the Linux kernel.
-
+```
 graph BT
 
     subgraph Host_Kernel [Linux Kernel]
@@ -118,7 +118,7 @@ graph BT
     %% Style the subgraphs
     style Host_Kernel fill:#f9f9f9,stroke:#666,stroke-width:1px,color:#333;
     style Jail fill:#fff,stroke:#ff6666,stroke-width:2px,stroke-dasharray: 5 5,color:#ff3333;
-
+```
 ## Filesystem Isolation
 
 The sandbox isolates the filesystem using **mount namespaces, bind mounts, and `chroot`**, without overlay or union filesystems.
