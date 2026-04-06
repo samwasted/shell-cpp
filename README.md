@@ -79,7 +79,7 @@ What happens under the hood:
 - **Cgroups v2 Limits**: Instead of solely relying on easily-bypassed `setrlimit` boundaries, physical memory and resources are now constrained using genuine Linux Control Groups (`/sys/fs/cgroup/jailsh-<pid>`).
 - **Zero Footprint Exit**: A custom bi-directional IPC pipe cleanly syncs initialization between the parent and forked child/grandchild (preventing race conditions during ID mapping). The moment the untrusted process exits, the parent catches `waitpid` and immediately cleans up the temporary filesystem workspace and kernel `cgroups` block.
 - **Capabilities Sandbox**: Linux capabilities are fully locked down (`capset` + bounding-set drop via `drop_all_capabilities()`), removing privileged kernel capabilities before exec.
-- **seccomp-bpf**: A strict syscall allowlist filters system calls via `apply_jail_policy()`. Everything else terminates the process immediately (`SCMP_ACT_KILL`). `openat` is only allowed read-only. `write` is restricted to fd 1 and 2.
+- **seccomp-bpf**: A strict syscall allowlist filters system calls via `apply_jail_policy()`. Everything else terminates the process immediately (`SCMP_ACT_KILL`). `openat` is only allowed read-only. Writes are controlled by the allowlist plus pre-exec FD cleanup.
 - `prctl(PR_SET_NO_NEW_PRIVS)` — can't escalate privileges.
 - All FDs above 2 are closed before `execv`.
 
