@@ -20,12 +20,8 @@ void sigchld_handler(int sig) {
     // and we want to restore it so the main loop doesn't get confused
     int saved_errno = errno;
 
-    // reap all dead children, using loop cuz if multiple children die at once, kernel 
-    // might send only one signal
-    // WNOHANG: return immediately if no more dead children
-    while (waitpid(-1, nullptr, WNOHANG) > 0) {
-        child_changed = 1;
-    }
+    // Just notify the main loop; actual reaping is done there so jobs state stays in sync.
+    child_changed = 1;
 
     errno = saved_errno;
 }
