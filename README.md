@@ -86,61 +86,45 @@ What happens under the hood:
 ### Layers of Isolation (The Vault)
 
 The jail is structured like a vault. The payload is surrounded by concentric filters, each enforced by the Linux kernel.
-``mermaid
 
+```mermaid
 
 graph BT
 
-
     subgraph Host_Kernel [Linux Kernel]
-
 
         direction BT
 
-
         Cgroups[Cgroups v2: RAM/CPU Rations]
-
 
         Seccomp[Seccomp-BPF: Syscall Filter]
 
-
         Caps[Capabilities: Stripped Privileges]
-
 
         NS[Namespaces: Virtual Reality]
 
-
         
-
 
         subgraph Jail [The Sandbox]
 
-
             Payload(Untrusted Process)
-
 
         end
 
-
         
-
 
         Payload --> NS
 
-
         NS --> Caps
-
 
         Caps --> Seccomp
 
-
         Seccomp --> Cgroups
-
 
     end
 
+```
 
-``` 
 ## Filesystem Isolation
 
 The sandbox isolates the filesystem using **mount namespaces, bind mounts, and `chroot`**, without overlay or union filesystems.
