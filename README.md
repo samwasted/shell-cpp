@@ -91,35 +91,35 @@ The jail is structured like a vault. The payload is surrounded by concentric fil
 
 graph BT
 
-    subgraph Host_Kernel [Linux Kernel]
-        direction BT
-        
-        Cgroups[Cgroups v2: RAM/CPU Rations]:::cgroupNode
-        Seccomp[Seccomp-BPF: Syscall Filter]:::seccompNode
-        Caps[Capabilities: Stripped Privileges]:::capsNode
-        NS[Namespaces: Virtual Reality]:::nsNode
-        
-        subgraph Jail [The Sandbox]
-            direction BT
-            Payload(Untrusted Process):::payloadNode
-        end
-        
-        Payload --> NS
-        NS --> Caps
-        Caps --> Seccomp
-        Seccomp --> Cgroups
-    end
+    subgraph Host_Kernel [Linux Kernel]
+        direction BT
+        
+        Cgroups[Cgroups v2: RAM/CPU Rations]:::cgroupNode
+        Seccomp[Seccomp-BPF: Syscall Filter]:::seccompNode
+        Caps[Capabilities: Stripped Privileges]:::capsNode
+        NS[Namespaces: Virtual Reality]:::nsNode
+        
+        subgraph Jail [The Sandbox]
+            direction BT
+            Payload(Untrusted Process):::payloadNode
+        end
+        
+        Payload --> NS
+        NS --> Caps
+        Caps --> Seccomp
+        Seccomp --> Cgroups
+    end
 
-    %% Define colors and styles
-    classDef payloadNode fill:#ffcccc,stroke:#ff0000,stroke-width:2px,rx:10,ry:10,color:#990000;
-    classDef nsNode fill:#e6f3ff,stroke:#0073e6,stroke-width:2px,color:#004d99;
-    classDef capsNode fill:#e6ffe6,stroke:#00cc00,stroke-width:2px,color:#006600;
-    classDef seccompNode fill:#fff2e6,stroke:#ff9933,stroke-width:2px,color:#994d00;
-    classDef cgroupNode fill:#f2e6ff,stroke:#8000ff,stroke-width:2px,color:#4d0099;
-    
-    %% Style the subgraphs
-    style Host_Kernel fill:#f9f9f9,stroke:#666,stroke-width:1px,color:#333;
-    style Jail fill:#fff,stroke:#ff6666,stroke-width:2px,stroke-dasharray: 5 5,color:#ff3333;
+    %% Dark Mode Styles
+    classDef payloadNode fill:#442222,stroke:#ff6666,stroke-width:2px,rx:10,ry:10,color:#ffcccc;
+    classDef nsNode fill:#1a2a3a,stroke:#3399ff,stroke-width:2px,color:#cce6ff;
+    classDef capsNode fill:#1a331a,stroke:#66ff66,stroke-width:2px,color:#ccffcc;
+    classDef seccompNode fill:#332211,stroke:#ff9933,stroke-width:2px,color:#ffebcc;
+    classDef cgroupNode fill:#2a1a3a,stroke:#b366ff,stroke-width:2px,color:#e6ccff;
+    
+    %% Style the subgraphs for Dark Mode
+    style Host_Kernel fill:#121212,stroke:#444,stroke-width:1px,color:#eee;
+    style Jail fill:#1a1a1a,stroke:#ff4444,stroke-width:2px,stroke-dasharray: 5 5,color:#ff8888;
 
 ```
 
