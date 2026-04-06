@@ -338,33 +338,15 @@ sequenceDiagram
     participant Parent as Parent (Host)
     participant Child as Child (Namespace)
     
-    Note over Parent, Child: IPC Handshake (Dark Mode)
-    
     Parent->>Child: fork()
-    rect rgb(30, 30, 40)
-    Note right of Child: CLONE_NEWUSER
-    Child->>Child: unshare()
-    end
-    
-    Child->>Parent: Write "A" (Sync byte)
-    
-    rect rgb(40, 20, 20)
-    Note right of Child: BLOCKED
-    Child->>Child: read()
-    end
-
-    rect rgb(20, 40, 20)
-    Note left of Parent: Mapping Authority
-    Parent->>Child: Write "0 <uid> 1" to uid_map
-    Parent->>Child: Write "0 <gid> 1" to gid_map
-    end
-
-    Parent->>Child: Write "A" (Wake up)
-    
-    rect rgb(20, 30, 50)
-    Note right of Child: RESUMED
-    Child->>Child: Identity: Root (UID 0)
-    end
+    Child->>Child: unshare(CLONE_NEWUSER)
+    Child->>Parent: Write "A" (Sync byte via pipe)
+    Child->>Child: Block on read() waiting for Parent
+    Parent->>Parent: Read "A" (Child is ready)
+    Parent->>Child: Write "0 <uid> 1" to /proc/[pid]/uid_map
+    Parent->>Child: Write "0 <gid> 1" to /proc/[pid]/gid_map
+    Parent->>Child: Write "A" (Wake up byte)
+    Child->>Child: Unblock, resume as mapped Root
 ```
 
 ### The `CLONE_NEWPID` Trap
